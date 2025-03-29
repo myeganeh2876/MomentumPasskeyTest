@@ -1,8 +1,9 @@
 import axios from 'axios';
+import { getAccessToken, saveTokens } from '../utils/tokenUtils';
 
 // Create an axios instance with default config
 const api = axios.create({
-  baseURL: 'http://localhost:8000', // Replace with your actual API base URL
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000', // Use environment variable with fallback
   headers: {
     'Content-Type': 'application/json',
   },
@@ -11,7 +12,7 @@ const api = axios.create({
 // Add a request interceptor to add the token to all requests
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -35,20 +36,20 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       
       try {
-        // Try to refresh the token
-        const refreshToken = localStorage.getItem('refreshToken');
+        // Try to refresh the token using the refresh endpoint
+        const refreshToken = localStorage.getItem('refresh_token');
         if (!refreshToken) {
           // No refresh token, redirect to login
           window.location.href = '/login';
           return Promise.reject(error);
         }
         
-        const response = await axios.post('/auth/refresh/', {
+        const response = await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/auth/refresh/`, {
           refresh: refreshToken,
         });
         
-        // Save the new tokens
-        localStorage.setItem('accessToken', response.data.access);
+        // Save the new tokens using tokenUtils
+        saveTokens(response.data.access, response.data.refresh);
         
         // Retry the original request with the new token
         originalRequest.headers.Authorization = `Bearer ${response.data.access}`;

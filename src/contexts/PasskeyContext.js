@@ -2,6 +2,7 @@ import React, { createContext, useState, useContext } from 'react';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import { authAPI } from '../api/api';
 import { useAuth } from './AuthContext';
+import { getPasskeyConfig } from '../utils/passkeyConfig';
 
 // Create the context
 const PasskeyContext = createContext();
@@ -45,8 +46,16 @@ export const PasskeyProvider = ({ children }) => {
       const optionsResponse = await authAPI.getPasskeyRegOptions(name);
       const options = optionsResponse.data;
       
-      // Start the registration process in the browser
-      const attResp = await startRegistration(options);
+      // Get passkey configuration
+      const passkeyConfig = getPasskeyConfig();
+      
+      // Start the registration process in the browser with our configuration
+      const attResp = await startRegistration({
+        ...options,
+        rpId: passkeyConfig.rpId,
+        rpName: passkeyConfig.rpName,
+        origin: passkeyConfig.origin
+      });
       
       // Verify the registration with the server
       const verificationResponse = await authAPI.verifyPasskeyReg({
@@ -84,8 +93,15 @@ export const PasskeyProvider = ({ children }) => {
       const optionsResponse = await authAPI.getPasskeyAuthOptions(phone);
       const options = optionsResponse.data;
       
-      // Start the authentication process in the browser
-      const authResp = await startAuthentication(options);
+      // Get passkey configuration
+      const passkeyConfig = getPasskeyConfig();
+      
+      // Start the authentication process in the browser with our configuration
+      const authResp = await startAuthentication({
+        ...options,
+        rpId: passkeyConfig.rpId,
+        origin: passkeyConfig.origin
+      });
       
       // Verify the authentication with the server
       const verificationResponse = await authAPI.verifyPasskeyAuth({

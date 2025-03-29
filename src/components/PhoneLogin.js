@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useDevice } from '../contexts/DeviceContext';
+import { getPasskeyConfig } from '../utils/passkeyConfig';
 
 const PhoneLogin = () => {
   const [phone, setPhone] = useState('');
@@ -94,8 +95,15 @@ const PhoneLogin = () => {
       // Import startAuthentication from the browser package
       const { startAuthentication } = await import('@simplewebauthn/browser');
       
-      // Start the authentication process in the browser
-      const authResp = await startAuthentication(options);
+      // Get passkey configuration
+      const passkeyConfig = getPasskeyConfig();
+      
+      // Start the authentication process in the browser with our configuration
+      const authResp = await startAuthentication({
+        ...options,
+        rpId: passkeyConfig.rpId,
+        origin: passkeyConfig.origin
+      });
       
       // Verify the authentication with the server
       const verificationResponse = await verifyPasskeyAuth({
