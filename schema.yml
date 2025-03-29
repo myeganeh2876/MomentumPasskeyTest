@@ -1,0 +1,2857 @@
+openapi: 3.0.3
+info:
+  title: Braavos Backend API
+  version: 1.0.0
+  description: Backend API for the Braavos investment and trading platform
+paths:
+  /auth/passkey/authenticate/options/:
+    post:
+      operationId: auth_passkey_authenticate_options_create
+      description: Generates options for authenticating with a passkey.
+      summary: Generate passkey authentication options
+      tags:
+      - PassKeys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasskeyAuthenticationOptionsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasskeyAuthenticationOptionsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasskeyAuthenticationOptionsRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Authentication options generated successfully
+  /auth/passkey/authenticate/verify/:
+    post:
+      operationId: auth_passkey_authenticate_verify_create
+      description: Verifies a passkey authentication response and returns JWT tokens.
+      summary: Verify passkey authentication
+      tags:
+      - PassKeys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasskeyAuthenticationResponseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasskeyAuthenticationResponseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasskeyAuthenticationResponseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Authentication successful
+        '401':
+          description: Authentication failed
+  /auth/passkey/credentials/:
+    get:
+      operationId: auth_passkey_credentials_list
+      description: Returns a list of passkey credentials for the authenticated user.
+      summary: List passkey credentials
+      tags:
+      - PassKeys
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PasskeyCredential'
+          description: ''
+    delete:
+      operationId: auth_passkey_credentials_destroy
+      description: Deletes a passkey credential by ID.
+      summary: Delete a passkey credential
+      parameters:
+      - in: path
+        name: credential_id
+        schema:
+          type: string
+        description: ID of the credential to delete
+        required: true
+      tags:
+      - PassKeys
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: Credential deleted successfully
+        '404':
+          description: Credential not found
+  /auth/passkey/credentials/{credential_id}/:
+    get:
+      operationId: auth_passkey_credentials_list_2
+      description: Returns a list of passkey credentials for the authenticated user.
+      summary: List passkey credentials
+      parameters:
+      - in: path
+        name: credential_id
+        schema:
+          type: string
+        required: true
+      tags:
+      - PassKeys
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PasskeyCredential'
+          description: ''
+    delete:
+      operationId: auth_passkey_credentials_destroy_2
+      description: Deletes a passkey credential by ID.
+      summary: Delete a passkey credential
+      parameters:
+      - in: path
+        name: credential_id
+        schema:
+          type: string
+        description: ID of the credential to delete
+        required: true
+      tags:
+      - PassKeys
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: Credential deleted successfully
+        '404':
+          description: Credential not found
+  /auth/passkey/register/options/:
+    post:
+      operationId: auth_passkey_register_options_create
+      description: Generates options for registering a new passkey.
+      summary: Generate passkey registration options
+      tags:
+      - PassKeys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasskeyRegistrationOptionsRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasskeyRegistrationOptionsRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasskeyRegistrationOptionsRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: Registration options generated successfully
+  /auth/passkey/register/verify/:
+    post:
+      operationId: auth_passkey_register_verify_create
+      description: Verifies a passkey registration response and creates a credential.
+      summary: Verify passkey registration
+      tags:
+      - PassKeys
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasskeyRegistrationResponseRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasskeyRegistrationResponseRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasskeyRegistrationResponseRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasskeyCredential'
+          description: ''
+        '400':
+          description: Invalid registration response
+  /auth/phone/countries/:
+    get:
+      operationId: auth_phone_countries_list
+      description: Returns a list of supported countries for phone verification.
+      summary: Get supported countries
+      tags:
+      - Authentication
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SupportedCountries'
+          description: ''
+  /auth/phone/login/:
+    post:
+      operationId: auth_phone_login_create
+      description: Request a verification code to be sent to the provided phone number.
+      summary: Request phone verification
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  pattern: ^\+?1?\d{9,15}$
+                  description: Phone number in international format (e.g. +12345678901)
+                  example: '+15552345678'
+                country:
+                  type: string
+                  format: country-code
+                  description: ISO 3166-1 alpha-2 country code (e.g. US)
+                  example: US
+              required:
+              - phone
+              - country
+            examples:
+              ExampleRequest:
+                value:
+                  phone: '+15552345678'
+                  country: US
+                summary: Standard phone verification request
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Verification code sent successfully
+        '400':
+          description: Invalid phone number or rate limited
+        '500':
+          description: Error sending verification code
+  /auth/phone/verify/:
+    post:
+      operationId: auth_phone_verify_create
+      description: Verify the code sent to the phone number and return JWT tokens
+        upon successful verification.
+      summary: Verify phone and get JWT token
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                  pattern: ^\+?1?\d{9,15}$
+                  description: Phone number in international format (e.g. +12345678901)
+                  example: '+15552345678'
+                code:
+                  type: string
+                  description: Verification code sent to the phone number
+                  example: '123456'
+                country:
+                  type: string
+                  format: country-code
+                  description: ISO 3166-1 alpha-2 country code (e.g. US)
+                  example: US
+                device_id:
+                  type: string
+                  description: Unique identifier for the device
+                  example: d8f9a7b5-c6e4-3d2a-1b0c-9f8e7d6c5b4a
+                fcm_token:
+                  type: string
+                  description: Firebase Cloud Messaging token for push notifications
+                  example: fMEGITFVKOp2EDGf_AJDKn:APA91bGxyz123...
+                user_agent:
+                  type: string
+                  description: User agent string from the client
+                  example: Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X)
+              required:
+              - phone
+              - code
+            examples:
+              ExampleRequest:
+                value:
+                  phone: '+15552345678'
+                  code: '123456'
+                  country: US
+                  device_id: d8f9a7b5-c6e4-3d2a-1b0c-9f8e7d6c5b4a
+                summary: Standard verification request
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: Phone verified successfully, tokens generated
+        '400':
+          description: Invalid verification code
+        '500':
+          description: Error verifying code
+  /auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: Takes a refresh token and returns a new access token. Used when
+        the original access token expires after 60 minutes.
+      summary: Refresh access token
+      tags:
+      - Authentication
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          description: New access token obtained
+        '401':
+          description: Invalid refresh token
+  /devices/:
+    get:
+      operationId: devices_list
+      description: Returns a list of all devices registered to the authenticated user.
+      summary: List user devices
+      tags:
+      - Devices
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Device'
+          description: ''
+  /devices/{device_id}/:
+    get:
+      operationId: devices_retrieve
+      description: Returns details of a specific device.
+      summary: Get device details
+      parameters:
+      - in: path
+        name: device_id
+        schema:
+          type: string
+        description: Device ID
+        required: true
+      tags:
+      - Devices
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+        '404':
+          description: Device not found
+    patch:
+      operationId: devices_partial_update
+      description: Update the FCM token for a specific device.
+      summary: Update device FCM token
+      parameters:
+      - in: path
+        name: device_id
+        schema:
+          type: string
+        description: Device ID
+        required: true
+      tags:
+      - Devices
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDeviceUpdateRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+          description: ''
+        '400':
+          description: Invalid data
+        '404':
+          description: Device not found
+    delete:
+      operationId: devices_destroy
+      description: Deactivate a specific device (logout).
+      summary: Logout device
+      parameters:
+      - in: path
+        name: device_id
+        schema:
+          type: string
+        description: Device ID
+        required: true
+      tags:
+      - Devices
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: Device logged out successfully
+        '404':
+          description: Device not found
+  /devices/logout/all/:
+    post:
+      operationId: devices_logout_all_create
+      description: Deactivate all devices for the authenticated user (logout everywhere).
+      summary: Logout all devices
+      tags:
+      - Devices
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '204':
+          description: All devices logged out successfully
+  /feeds/:
+    get:
+      operationId: feeds_list
+      description: Return a list of all feeds for the authenticated user's persona.
+      summary: List feeds
+      tags:
+      - Feed
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FeedDetail'
+          description: ''
+  /feeds/{id}/dislike/:
+    post:
+      operationId: feeds_dislike_create
+      description: Dislike a feed item.
+      summary: Dislike feed
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this feed.
+        required: true
+      tags:
+      - Feed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FeedDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FeedDetailRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: Feed disliked
+        '404':
+          description: Feed not found
+  /feeds/{id}/like/:
+    post:
+      operationId: feeds_like_create
+      description: Like a feed item and potentially create a match.
+      summary: Like feed
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this feed.
+        required: true
+      tags:
+      - Feed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FeedDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FeedDetailRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: Feed liked
+        '404':
+          description: Feed not found
+  /feeds/{id}/seen/:
+    post:
+      operationId: feeds_seen_create
+      description: Mark a feed item as seen by the user.
+      summary: Mark feed as seen
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this feed.
+        required: true
+      tags:
+      - Feed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedDetailRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/FeedDetailRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FeedDetailRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+          description: Feed marked as seen
+        '404':
+          description: Feed not found
+  /matches/advisors/:
+    get:
+      operationId: matches_advisors_list
+      description: Return a list of all matched advisors for the authenticated user.
+      summary: View matched advisors
+      tags:
+      - Matches
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdvisorMatch'
+          description: ''
+  /matches/startups/:
+    get:
+      operationId: matches_startups_list
+      description: Return a list of all matched startups for the authenticated user.
+      summary: View matched startups
+      tags:
+      - Matches
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StartupMatch'
+          description: ''
+  /meetings/:
+    get:
+      operationId: meetings_list
+      description: Get a list of meetings for the authenticated user
+      summary: List meetings
+      tags:
+      - Meetings
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MeetingDetail'
+          description: ''
+  /meetings/{id}/cancel/:
+    delete:
+      operationId: meetings_cancel_destroy
+      description: Cancel the meeting (available to any participant)
+      summary: Cancel meeting
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this meeting.
+        required: true
+      tags:
+      - Meetings
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingDetail'
+          description: ''
+        '403':
+          description: Permission denied
+        '404':
+          description: Meeting not found
+  /meetings/{id}/edit/:
+    patch:
+      operationId: meetings_edit_partial_update
+      description: Initiator updates proposed meeting times
+      summary: Edit meeting
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this meeting.
+        required: true
+      tags:
+      - Meetings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEditMeetingTimesRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEditMeetingTimesRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEditMeetingTimesRequest'
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingDetail'
+          description: ''
+        '400':
+          description: Invalid input
+        '403':
+          description: Permission denied
+        '404':
+          description: Meeting not found
+  /meetings/{id}/select/:
+    post:
+      operationId: meetings_select_create
+      description: Participant selects a time from proposed options
+      summary: Select meeting time
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this meeting.
+        required: true
+      tags:
+      - Meetings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SelectMeetingTimeRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SelectMeetingTimeRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SelectMeetingTimeRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingDetail'
+          description: ''
+        '400':
+          description: Invalid selection
+        '403':
+          description: Permission denied
+        '404':
+          description: Meeting not found
+  /meetings/propose/:
+    post:
+      operationId: meetings_propose_create
+      description: Create a new meeting with proposed times and a participant
+      summary: Propose meeting
+      tags:
+      - Meetings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProposeMeetingRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProposeMeetingRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProposeMeetingRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeetingDetail'
+          description: ''
+        '400':
+          description: Invalid input
+  /people/{id}/as_advisor/:
+    get:
+      operationId: people_as_advisor_retrieve
+      description: View a person's profile from an advisor perspective, including
+        employment history and company details.
+      summary: View person as advisor
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this person.
+        required: true
+      tags:
+      - People
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdvisorPerson'
+          description: Person profile successfully retrieved with advisor view
+        '404':
+          description: Person not found
+  /people/me/:
+    get:
+      operationId: people_me_retrieve
+      description: Retrieve the person profile of the authenticated user with employment
+        details.
+      summary: Get my person profile
+      tags:
+      - People
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MePerson'
+          description: Person profile successfully retrieved
+        '404':
+          description: Person profile not found for authenticated user
+components:
+  schemas:
+    AccessLevelEnum:
+      enum:
+      - admin
+      - manager
+      - employee
+      - guest
+      type: string
+      description: |-
+        * `admin` - Admin
+        * `manager` - Manager
+        * `employee` - Employee
+        * `guest` - Guest
+    AdvisorMatch:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        buyer_company:
+          $ref: '#/components/schemas/Company'
+        advisor:
+          $ref: '#/components/schemas/AdvisorPerson'
+      required:
+      - advisor
+      - buyer_company
+      - id
+    AdvisorPerson:
+      type: object
+      description: Serializer for viewing a person from an advisor perspective
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          description: Full name of the person
+          maxLength: 255
+        picture_url:
+          type: string
+          format: uri
+          description: URL to profile picture
+          maxLength: 2048
+        linkedin_url:
+          type: string
+          format: uri
+          description: LinkedIn profile URL
+          maxLength: 200
+        current_title:
+          type: string
+          description: Current job title
+          maxLength: 255
+        employments:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonEmployment'
+      required:
+      - employments
+      - id
+    AdvisorTypeEnum:
+      enum:
+      - decision_maker
+      - champion
+      - connector
+      type: string
+      description: |-
+        * `decision_maker` - Decision Maker
+        * `champion` - Champion
+        * `connector` - Connector
+    BlankEnum:
+      enum:
+      - ''
+    Card:
+      type: object
+      description: Serializer for Card model
+      properties:
+        connect_to:
+          $ref: '#/components/schemas/Person'
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          description: |-
+            Type of card
+
+            * `potential_customer` - Potential Customer
+            * `advisor_suggestion` - Recommended Advisor
+            * `advisor_interest` - Interested Advisor
+            * `opportunity_suggestion` - Business Opportunity
+            * `executive_request` - Advice Request
+        advisor_type:
+          nullable: true
+          description: |-
+            Type of advisor
+
+            * `decision_maker` - Decision Maker
+            * `champion` - Champion
+            * `connector` - Connector
+          oneOf:
+          - $ref: '#/components/schemas/AdvisorTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        recipient_persona:
+          allOf:
+          - $ref: '#/components/schemas/RecipientPersonaEnum'
+          description: |-
+            Type of persona that receives this card
+
+            * `executive` - Startup Executive
+            * `advisor` - Sales Advisor
+        priority_score:
+          type: number
+          format: double
+          description: Score to determine card importance
+        status:
+          allOf:
+          - $ref: '#/components/schemas/CardStatusEnum'
+          description: |-
+            Current status of the card
+
+            * `created` - Created
+            * `feeded` - Feeded
+            * `seen` - Seen
+            * `liked` - Liked
+            * `disliked` - Disliked
+            * `canceled` - Canceled
+        title:
+          type: string
+          nullable: true
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        speech_text:
+          type: string
+          nullable: true
+      required:
+      - connect_to
+      - recipient_persona
+      - type
+    CardRequest:
+      type: object
+      description: Serializer for Card model
+      properties:
+        connect_to:
+          $ref: '#/components/schemas/PersonRequest'
+        type:
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          description: |-
+            Type of card
+
+            * `potential_customer` - Potential Customer
+            * `advisor_suggestion` - Recommended Advisor
+            * `advisor_interest` - Interested Advisor
+            * `opportunity_suggestion` - Business Opportunity
+            * `executive_request` - Advice Request
+        advisor_type:
+          nullable: true
+          description: |-
+            Type of advisor
+
+            * `decision_maker` - Decision Maker
+            * `champion` - Champion
+            * `connector` - Connector
+          oneOf:
+          - $ref: '#/components/schemas/AdvisorTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        recipient_persona:
+          allOf:
+          - $ref: '#/components/schemas/RecipientPersonaEnum'
+          description: |-
+            Type of persona that receives this card
+
+            * `executive` - Startup Executive
+            * `advisor` - Sales Advisor
+        priority_score:
+          type: number
+          format: double
+          description: Score to determine card importance
+        status:
+          allOf:
+          - $ref: '#/components/schemas/CardStatusEnum'
+          description: |-
+            Current status of the card
+
+            * `created` - Created
+            * `feeded` - Feeded
+            * `seen` - Seen
+            * `liked` - Liked
+            * `disliked` - Disliked
+            * `canceled` - Canceled
+        title:
+          type: string
+          nullable: true
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        speech_text:
+          type: string
+          nullable: true
+      required:
+      - connect_to
+      - recipient_persona
+      - type
+    CardStatusEnum:
+      enum:
+      - created
+      - feeded
+      - seen
+      - liked
+      - disliked
+      - canceled
+      type: string
+      description: |-
+        * `created` - Created
+        * `feeded` - Feeded
+        * `seen` - Seen
+        * `liked` - Liked
+        * `disliked` - Disliked
+        * `canceled` - Canceled
+    Company:
+      type: object
+      description: Basic serializer for company data
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          description: Company name
+          maxLength: 255
+        description:
+          type: string
+          description: Company description
+        picture_url:
+          type: string
+          readOnly: true
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/Profile'
+          readOnly: true
+      required:
+      - id
+      - picture_url
+      - profile
+      - title
+    CompanyEmployment:
+      type: object
+      description: Serializer for company employment relationships
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          description: Job title
+          maxLength: 256
+        person:
+          $ref: '#/components/schemas/Person'
+        access_level:
+          allOf:
+          - $ref: '#/components/schemas/AccessLevelEnum'
+          description: |-
+            Permission level within the company
+
+            * `admin` - Admin
+            * `manager` - Manager
+            * `employee` - Employee
+            * `guest` - Guest
+      required:
+      - id
+      - person
+      - title
+    CompanyRequest:
+      type: object
+      description: Basic serializer for company data
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: Company name
+          maxLength: 255
+        description:
+          type: string
+          description: Company description
+      required:
+      - title
+    CountryEnum:
+      enum:
+      - AF
+      - AX
+      - AL
+      - DZ
+      - AS
+      - AD
+      - AO
+      - AI
+      - AQ
+      - AG
+      - AR
+      - AM
+      - AW
+      - AU
+      - AT
+      - AZ
+      - BS
+      - BH
+      - BD
+      - BB
+      - BY
+      - BE
+      - BZ
+      - BJ
+      - BM
+      - BT
+      - BO
+      - BQ
+      - BA
+      - BW
+      - BV
+      - BR
+      - IO
+      - BN
+      - BG
+      - BF
+      - BI
+      - CV
+      - KH
+      - CM
+      - CA
+      - KY
+      - CF
+      - TD
+      - CL
+      - CN
+      - CX
+      - CC
+      - CO
+      - KM
+      - CG
+      - CD
+      - CK
+      - CR
+      - CI
+      - HR
+      - CU
+      - CW
+      - CY
+      - CZ
+      - DK
+      - DJ
+      - DM
+      - DO
+      - EC
+      - EG
+      - SV
+      - GQ
+      - ER
+      - EE
+      - SZ
+      - ET
+      - FK
+      - FO
+      - FJ
+      - FI
+      - FR
+      - GF
+      - PF
+      - TF
+      - GA
+      - GM
+      - GE
+      - DE
+      - GH
+      - GI
+      - GR
+      - GL
+      - GD
+      - GP
+      - GU
+      - GT
+      - GG
+      - GN
+      - GW
+      - GY
+      - HT
+      - HM
+      - VA
+      - HN
+      - HK
+      - HU
+      - IS
+      - IN
+      - ID
+      - IR
+      - IQ
+      - IE
+      - IM
+      - IL
+      - IT
+      - JM
+      - JP
+      - JE
+      - JO
+      - KZ
+      - KE
+      - KI
+      - KW
+      - KG
+      - LA
+      - LV
+      - LB
+      - LS
+      - LR
+      - LY
+      - LI
+      - LT
+      - LU
+      - MO
+      - MG
+      - MW
+      - MY
+      - MV
+      - ML
+      - MT
+      - MH
+      - MQ
+      - MR
+      - MU
+      - YT
+      - MX
+      - FM
+      - MD
+      - MC
+      - MN
+      - ME
+      - MS
+      - MA
+      - MZ
+      - MM
+      - NA
+      - NR
+      - NP
+      - NL
+      - NC
+      - NZ
+      - NI
+      - NE
+      - NG
+      - NU
+      - NF
+      - KP
+      - MK
+      - MP
+      - 'NO'
+      - OM
+      - PK
+      - PW
+      - PS
+      - PA
+      - PG
+      - PY
+      - PE
+      - PH
+      - PN
+      - PL
+      - PT
+      - PR
+      - QA
+      - RE
+      - RO
+      - RU
+      - RW
+      - BL
+      - SH
+      - KN
+      - LC
+      - MF
+      - PM
+      - VC
+      - WS
+      - SM
+      - ST
+      - SA
+      - SN
+      - RS
+      - SC
+      - SL
+      - SG
+      - SX
+      - SK
+      - SI
+      - SB
+      - SO
+      - ZA
+      - GS
+      - KR
+      - SS
+      - ES
+      - LK
+      - SD
+      - SR
+      - SJ
+      - SE
+      - CH
+      - SY
+      - TW
+      - TJ
+      - TZ
+      - TH
+      - TL
+      - TG
+      - TK
+      - TO
+      - TT
+      - TN
+      - TR
+      - TM
+      - TC
+      - TV
+      - UG
+      - UA
+      - AE
+      - GB
+      - UM
+      - US
+      - UY
+      - UZ
+      - VU
+      - VE
+      - VN
+      - VG
+      - VI
+      - WF
+      - EH
+      - YE
+      - ZM
+      - ZW
+      type: string
+      description: |-
+        * `AF` - Afghanistan
+        * `AX` - Åland Islands
+        * `AL` - Albania
+        * `DZ` - Algeria
+        * `AS` - American Samoa
+        * `AD` - Andorra
+        * `AO` - Angola
+        * `AI` - Anguilla
+        * `AQ` - Antarctica
+        * `AG` - Antigua and Barbuda
+        * `AR` - Argentina
+        * `AM` - Armenia
+        * `AW` - Aruba
+        * `AU` - Australia
+        * `AT` - Austria
+        * `AZ` - Azerbaijan
+        * `BS` - Bahamas
+        * `BH` - Bahrain
+        * `BD` - Bangladesh
+        * `BB` - Barbados
+        * `BY` - Belarus
+        * `BE` - Belgium
+        * `BZ` - Belize
+        * `BJ` - Benin
+        * `BM` - Bermuda
+        * `BT` - Bhutan
+        * `BO` - Bolivia
+        * `BQ` - Bonaire, Sint Eustatius and Saba
+        * `BA` - Bosnia and Herzegovina
+        * `BW` - Botswana
+        * `BV` - Bouvet Island
+        * `BR` - Brazil
+        * `IO` - British Indian Ocean Territory
+        * `BN` - Brunei
+        * `BG` - Bulgaria
+        * `BF` - Burkina Faso
+        * `BI` - Burundi
+        * `CV` - Cabo Verde
+        * `KH` - Cambodia
+        * `CM` - Cameroon
+        * `CA` - Canada
+        * `KY` - Cayman Islands
+        * `CF` - Central African Republic
+        * `TD` - Chad
+        * `CL` - Chile
+        * `CN` - China
+        * `CX` - Christmas Island
+        * `CC` - Cocos (Keeling) Islands
+        * `CO` - Colombia
+        * `KM` - Comoros
+        * `CG` - Congo
+        * `CD` - Congo (the Democratic Republic of the)
+        * `CK` - Cook Islands
+        * `CR` - Costa Rica
+        * `CI` - Côte d'Ivoire
+        * `HR` - Croatia
+        * `CU` - Cuba
+        * `CW` - Curaçao
+        * `CY` - Cyprus
+        * `CZ` - Czechia
+        * `DK` - Denmark
+        * `DJ` - Djibouti
+        * `DM` - Dominica
+        * `DO` - Dominican Republic
+        * `EC` - Ecuador
+        * `EG` - Egypt
+        * `SV` - El Salvador
+        * `GQ` - Equatorial Guinea
+        * `ER` - Eritrea
+        * `EE` - Estonia
+        * `SZ` - Eswatini
+        * `ET` - Ethiopia
+        * `FK` - Falkland Islands (Malvinas)
+        * `FO` - Faroe Islands
+        * `FJ` - Fiji
+        * `FI` - Finland
+        * `FR` - France
+        * `GF` - French Guiana
+        * `PF` - French Polynesia
+        * `TF` - French Southern Territories
+        * `GA` - Gabon
+        * `GM` - Gambia
+        * `GE` - Georgia
+        * `DE` - Germany
+        * `GH` - Ghana
+        * `GI` - Gibraltar
+        * `GR` - Greece
+        * `GL` - Greenland
+        * `GD` - Grenada
+        * `GP` - Guadeloupe
+        * `GU` - Guam
+        * `GT` - Guatemala
+        * `GG` - Guernsey
+        * `GN` - Guinea
+        * `GW` - Guinea-Bissau
+        * `GY` - Guyana
+        * `HT` - Haiti
+        * `HM` - Heard Island and McDonald Islands
+        * `VA` - Holy See
+        * `HN` - Honduras
+        * `HK` - Hong Kong
+        * `HU` - Hungary
+        * `IS` - Iceland
+        * `IN` - India
+        * `ID` - Indonesia
+        * `IR` - Iran
+        * `IQ` - Iraq
+        * `IE` - Ireland
+        * `IM` - Isle of Man
+        * `IL` - Israel
+        * `IT` - Italy
+        * `JM` - Jamaica
+        * `JP` - Japan
+        * `JE` - Jersey
+        * `JO` - Jordan
+        * `KZ` - Kazakhstan
+        * `KE` - Kenya
+        * `KI` - Kiribati
+        * `KW` - Kuwait
+        * `KG` - Kyrgyzstan
+        * `LA` - Laos
+        * `LV` - Latvia
+        * `LB` - Lebanon
+        * `LS` - Lesotho
+        * `LR` - Liberia
+        * `LY` - Libya
+        * `LI` - Liechtenstein
+        * `LT` - Lithuania
+        * `LU` - Luxembourg
+        * `MO` - Macao
+        * `MG` - Madagascar
+        * `MW` - Malawi
+        * `MY` - Malaysia
+        * `MV` - Maldives
+        * `ML` - Mali
+        * `MT` - Malta
+        * `MH` - Marshall Islands
+        * `MQ` - Martinique
+        * `MR` - Mauritania
+        * `MU` - Mauritius
+        * `YT` - Mayotte
+        * `MX` - Mexico
+        * `FM` - Micronesia
+        * `MD` - Moldova
+        * `MC` - Monaco
+        * `MN` - Mongolia
+        * `ME` - Montenegro
+        * `MS` - Montserrat
+        * `MA` - Morocco
+        * `MZ` - Mozambique
+        * `MM` - Myanmar
+        * `NA` - Namibia
+        * `NR` - Nauru
+        * `NP` - Nepal
+        * `NL` - Netherlands
+        * `NC` - New Caledonia
+        * `NZ` - New Zealand
+        * `NI` - Nicaragua
+        * `NE` - Niger
+        * `NG` - Nigeria
+        * `NU` - Niue
+        * `NF` - Norfolk Island
+        * `KP` - North Korea
+        * `MK` - North Macedonia
+        * `MP` - Northern Mariana Islands
+        * `NO` - Norway
+        * `OM` - Oman
+        * `PK` - Pakistan
+        * `PW` - Palau
+        * `PS` - Palestine, State of
+        * `PA` - Panama
+        * `PG` - Papua New Guinea
+        * `PY` - Paraguay
+        * `PE` - Peru
+        * `PH` - Philippines
+        * `PN` - Pitcairn
+        * `PL` - Poland
+        * `PT` - Portugal
+        * `PR` - Puerto Rico
+        * `QA` - Qatar
+        * `RE` - Réunion
+        * `RO` - Romania
+        * `RU` - Russia
+        * `RW` - Rwanda
+        * `BL` - Saint Barthélemy
+        * `SH` - Saint Helena, Ascension and Tristan da Cunha
+        * `KN` - Saint Kitts and Nevis
+        * `LC` - Saint Lucia
+        * `MF` - Saint Martin (French part)
+        * `PM` - Saint Pierre and Miquelon
+        * `VC` - Saint Vincent and the Grenadines
+        * `WS` - Samoa
+        * `SM` - San Marino
+        * `ST` - Sao Tome and Principe
+        * `SA` - Saudi Arabia
+        * `SN` - Senegal
+        * `RS` - Serbia
+        * `SC` - Seychelles
+        * `SL` - Sierra Leone
+        * `SG` - Singapore
+        * `SX` - Sint Maarten (Dutch part)
+        * `SK` - Slovakia
+        * `SI` - Slovenia
+        * `SB` - Solomon Islands
+        * `SO` - Somalia
+        * `ZA` - South Africa
+        * `GS` - South Georgia and the South Sandwich Islands
+        * `KR` - South Korea
+        * `SS` - South Sudan
+        * `ES` - Spain
+        * `LK` - Sri Lanka
+        * `SD` - Sudan
+        * `SR` - Suriname
+        * `SJ` - Svalbard and Jan Mayen
+        * `SE` - Sweden
+        * `CH` - Switzerland
+        * `SY` - Syria
+        * `TW` - Taiwan
+        * `TJ` - Tajikistan
+        * `TZ` - Tanzania
+        * `TH` - Thailand
+        * `TL` - Timor-Leste
+        * `TG` - Togo
+        * `TK` - Tokelau
+        * `TO` - Tonga
+        * `TT` - Trinidad and Tobago
+        * `TN` - Tunisia
+        * `TR` - Türkiye
+        * `TM` - Turkmenistan
+        * `TC` - Turks and Caicos Islands
+        * `TV` - Tuvalu
+        * `UG` - Uganda
+        * `UA` - Ukraine
+        * `AE` - United Arab Emirates
+        * `GB` - United Kingdom
+        * `UM` - United States Minor Outlying Islands
+        * `US` - United States of America
+        * `UY` - Uruguay
+        * `UZ` - Uzbekistan
+        * `VU` - Vanuatu
+        * `VE` - Venezuela
+        * `VN` - Vietnam
+        * `VG` - Virgin Islands (British)
+        * `VI` - Virgin Islands (U.S.)
+        * `WF` - Wallis and Futuna
+        * `EH` - Western Sahara
+        * `YE` - Yemen
+        * `ZM` - Zambia
+        * `ZW` - Zimbabwe
+    Device:
+      type: object
+      description: Serializer for Device model
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for this device
+        device_id:
+          type: string
+          description: Unique identifier for this device
+          maxLength: 255
+        user_agent:
+          type: string
+          nullable: true
+          description: User agent string from the device
+        ip_address:
+          type: string
+          readOnly: true
+          nullable: true
+          description: Last IP address used for login
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          description: Last time this device was used for login
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When this device was first registered
+        is_active:
+          type: boolean
+          description: Whether this device is currently active
+      required:
+      - created_at
+      - device_id
+      - id
+      - ip_address
+      - last_login
+    FeedDetail:
+      type: object
+      description: Detailed serializer for Feed with expanded relations
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        date:
+          type: string
+          format: date
+          readOnly: true
+          description: Date this feed was generated for
+        position:
+          type: integer
+          readOnly: true
+          description: Position in the feed sequence
+        buyer_company:
+          allOf:
+          - $ref: '#/components/schemas/Company'
+          readOnly: true
+        seller_company:
+          allOf:
+          - $ref: '#/components/schemas/Company'
+          readOnly: true
+        card:
+          $ref: '#/components/schemas/Card'
+      required:
+      - buyer_company
+      - card
+      - date
+      - id
+      - position
+      - seller_company
+    FeedDetailRequest:
+      type: object
+      description: Detailed serializer for Feed with expanded relations
+      properties:
+        card:
+          $ref: '#/components/schemas/CardRequest'
+      required:
+      - card
+    MePerson:
+      type: object
+      description: Serializer for viewing own person profile with employment details
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          description: Full name of the person
+          maxLength: 255
+        picture_url:
+          type: string
+          format: uri
+          description: URL to profile picture
+          maxLength: 2048
+        linkedin_url:
+          type: string
+          format: uri
+          description: LinkedIn profile URL
+          maxLength: 200
+        current_title:
+          type: string
+          description: Current job title
+          maxLength: 255
+        employments:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonEmployment'
+      required:
+      - employments
+      - id
+    MeetingDetail:
+      type: object
+      description: Detailed serializer for the Meeting model with related entities
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          allOf:
+          - $ref: '#/components/schemas/MeetingDetailStatusEnum'
+          description: |-
+            Current status of the meeting
+
+            * `pending` - Pending
+            * `proposed` - Proposed
+            * `scheduled` - Scheduled
+            * `completed` - Completed
+            * `canceled` - Canceled
+        initiator:
+          allOf:
+          - $ref: '#/components/schemas/Person'
+          readOnly: true
+        invited:
+          allOf:
+          - $ref: '#/components/schemas/Person'
+          readOnly: true
+        scheduled_time:
+          type: string
+          format: date-time
+          nullable: true
+          description: Scheduled date and time for the meeting
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Duration of the meeting in minutes
+        location:
+          type: string
+          nullable: true
+          description: Location of the meeting (physical or virtual)
+          maxLength: 255
+        meeting_link:
+          type: string
+          format: uri
+          nullable: true
+          description: URL for virtual meetings
+          maxLength: 200
+        proposed_times: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - initiator
+      - invited
+      - proposed_times
+      - updated_at
+    MeetingDetailStatusEnum:
+      enum:
+      - pending
+      - proposed
+      - scheduled
+      - completed
+      - canceled
+      type: string
+      description: |-
+        * `pending` - Pending
+        * `proposed` - Proposed
+        * `scheduled` - Scheduled
+        * `completed` - Completed
+        * `canceled` - Canceled
+    NullEnum:
+      enum:
+      - null
+    PasskeyAuthenticationOptionsRequest:
+      type: object
+      description: Serializer for generating passkey authentication options
+      properties:
+        phone:
+          type: string
+          minLength: 1
+      required:
+      - phone
+    PasskeyAuthenticationResponseRequest:
+      type: object
+      description: Serializer for validating passkey authentication response
+      properties:
+        credential_id:
+          type: string
+          minLength: 1
+        client_data_json:
+          type: string
+          minLength: 1
+        authenticator_data:
+          type: string
+          minLength: 1
+        signature:
+          type: string
+          minLength: 1
+        user_handle:
+          type: string
+          minLength: 1
+        device_id:
+          type: string
+        fcm_token:
+          type: string
+        user_agent:
+          type: string
+      required:
+      - authenticator_data
+      - client_data_json
+      - credential_id
+      - signature
+    PasskeyCredential:
+      type: object
+      description: Serializer for passkey credentials
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Unique identifier for this credential
+        name:
+          type: string
+          nullable: true
+          description: User-friendly name for this credential (e.g., "My iPhone")
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        last_used_at:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+      required:
+      - created_at
+      - id
+      - last_used_at
+    PasskeyRegistrationOptionsRequest:
+      type: object
+      description: Serializer for generating passkey registration options
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: User-friendly name for this credential
+    PasskeyRegistrationResponseRequest:
+      type: object
+      description: Serializer for validating passkey registration response
+      properties:
+        credential_id:
+          type: string
+          minLength: 1
+        client_data_json:
+          type: string
+          minLength: 1
+        attestation_object:
+          type: string
+          minLength: 1
+        name:
+          type: string
+          minLength: 1
+      required:
+      - attestation_object
+      - client_data_json
+      - credential_id
+    PatchedDeviceUpdateRequest:
+      type: object
+      description: Serializer for updating a device's FCM token
+      properties:
+        fcm_token:
+          type: string
+          nullable: true
+          description: Firebase Cloud Messaging token for push notifications
+    PatchedEditMeetingTimesRequest:
+      type: object
+      description: Serializer for editing proposed meeting times
+      properties:
+        proposed_times:
+          type: array
+          items:
+            type: string
+            format: date-time
+          description: Updated list of proposed meeting time slots
+          maxItems: 5
+          minItems: 1
+    Person:
+      type: object
+      description: Basic serializer for person data
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        full_name:
+          type: string
+          description: Full name of the person
+          maxLength: 255
+        picture_url:
+          type: string
+          format: uri
+          description: URL to profile picture
+          maxLength: 2048
+        linkedin_url:
+          type: string
+          format: uri
+          description: LinkedIn profile URL
+          maxLength: 200
+        current_title:
+          type: string
+          description: Current job title
+          maxLength: 255
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/Profile'
+          readOnly: true
+        user:
+          allOf:
+          - $ref: '#/components/schemas/User'
+          readOnly: true
+      required:
+      - id
+      - profile
+      - user
+    PersonEmployment:
+      type: object
+      description: Serializer for person employment relationships
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          description: Job title
+          maxLength: 256
+        company:
+          $ref: '#/components/schemas/Company'
+        access_level:
+          allOf:
+          - $ref: '#/components/schemas/AccessLevelEnum'
+          description: |-
+            Permission level within the company
+
+            * `admin` - Admin
+            * `manager` - Manager
+            * `employee` - Employee
+            * `guest` - Guest
+      required:
+      - company
+      - id
+      - title
+    PersonRequest:
+      type: object
+      description: Basic serializer for person data
+      properties:
+        full_name:
+          type: string
+          description: Full name of the person
+          maxLength: 255
+        picture_url:
+          type: string
+          format: uri
+          description: URL to profile picture
+          maxLength: 2048
+        linkedin_url:
+          type: string
+          format: uri
+          description: LinkedIn profile URL
+          maxLength: 200
+        current_title:
+          type: string
+          description: Current job title
+          maxLength: 255
+    Profile:
+      type: object
+      description: Serializer for profile data
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          description: Profile display name
+          maxLength: 255
+        description:
+          type: string
+          description: Detailed profile description
+        profile_type:
+          allOf:
+          - $ref: '#/components/schemas/ProfileTypeEnum'
+          readOnly: true
+          description: |-
+            Determines whether this profile represents a person or company
+
+            * `PERSON` - Person
+            * `COMPANY` - Company
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - profile_type
+      - title
+      - updated_at
+    ProfileRequest:
+      type: object
+      description: Serializer for profile data
+      properties:
+        title:
+          type: string
+          minLength: 1
+          description: Profile display name
+          maxLength: 255
+        description:
+          type: string
+          description: Detailed profile description
+      required:
+      - title
+    ProfileTypeEnum:
+      enum:
+      - PERSON
+      - COMPANY
+      type: string
+      description: |-
+        * `PERSON` - Person
+        * `COMPANY` - Company
+    ProposeMeetingRequest:
+      type: object
+      description: Serializer for creating a new meeting with proposed times
+      properties:
+        invited_person_id:
+          type: string
+          format: uuid
+          writeOnly: true
+          description: UUID of the person to schedule meeting with
+        proposed_times:
+          type: array
+          items:
+            type: string
+            format: date-time
+          description: List of proposed meeting time slots
+          maxItems: 5
+          minItems: 1
+        duration_minutes:
+          type: integer
+          maximum: 32767
+          minimum: 0
+          description: Duration of the meeting in minutes
+        location:
+          type: string
+          nullable: true
+          description: Location of the meeting (physical or virtual)
+          maxLength: 255
+        meeting_link:
+          type: string
+          format: uri
+          nullable: true
+          description: URL for virtual meetings
+          maxLength: 200
+      required:
+      - invited_person_id
+      - proposed_times
+    RecipientPersonaEnum:
+      enum:
+      - executive
+      - advisor
+      type: string
+      description: |-
+        * `executive` - Startup Executive
+        * `advisor` - Sales Advisor
+    SelectMeetingTimeRequest:
+      type: object
+      description: Serializer for selecting a meeting time from proposals
+      properties:
+        selected_time:
+          type: string
+          format: date-time
+          description: Selected meeting time from the proposed options
+      required:
+      - selected_time
+    StartupCompany:
+      type: object
+      description: Serializer for startup company data with employment details
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          description: Company name
+          maxLength: 255
+        description:
+          type: string
+          description: Company description
+        picture_url:
+          type: string
+          readOnly: true
+        employments:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyEmployment'
+      required:
+      - employments
+      - id
+      - picture_url
+      - title
+    StartupMatch:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        startup_company:
+          $ref: '#/components/schemas/StartupCompany'
+        executive:
+          $ref: '#/components/schemas/Person'
+      required:
+      - executive
+      - id
+      - startup_company
+    SupportedCountries:
+      type: object
+      description: Serializer for returning supported countries with phone prefixes
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        phone_prefix:
+          type: string
+      required:
+      - code
+      - name
+      - phone_prefix
+    TokenRefreshRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+      required:
+      - refresh
+    TypeEnum:
+      enum:
+      - potential_customer
+      - advisor_suggestion
+      - advisor_interest
+      - opportunity_suggestion
+      - executive_request
+      type: string
+      description: |-
+        * `potential_customer` - Potential Customer
+        * `advisor_suggestion` - Recommended Advisor
+        * `advisor_interest` - Interested Advisor
+        * `opportunity_suggestion` - Business Opportunity
+        * `executive_request` - Advice Request
+    User:
+      type: object
+      description: Serializer for user data
+      properties:
+        phone:
+          type: string
+          readOnly: true
+          title: Phone number
+          description: Phone number in international format
+        country:
+          nullable: true
+          description: |-
+            User country
+
+            * `AF` - Afghanistan
+            * `AX` - Åland Islands
+            * `AL` - Albania
+            * `DZ` - Algeria
+            * `AS` - American Samoa
+            * `AD` - Andorra
+            * `AO` - Angola
+            * `AI` - Anguilla
+            * `AQ` - Antarctica
+            * `AG` - Antigua and Barbuda
+            * `AR` - Argentina
+            * `AM` - Armenia
+            * `AW` - Aruba
+            * `AU` - Australia
+            * `AT` - Austria
+            * `AZ` - Azerbaijan
+            * `BS` - Bahamas
+            * `BH` - Bahrain
+            * `BD` - Bangladesh
+            * `BB` - Barbados
+            * `BY` - Belarus
+            * `BE` - Belgium
+            * `BZ` - Belize
+            * `BJ` - Benin
+            * `BM` - Bermuda
+            * `BT` - Bhutan
+            * `BO` - Bolivia
+            * `BQ` - Bonaire, Sint Eustatius and Saba
+            * `BA` - Bosnia and Herzegovina
+            * `BW` - Botswana
+            * `BV` - Bouvet Island
+            * `BR` - Brazil
+            * `IO` - British Indian Ocean Territory
+            * `BN` - Brunei
+            * `BG` - Bulgaria
+            * `BF` - Burkina Faso
+            * `BI` - Burundi
+            * `CV` - Cabo Verde
+            * `KH` - Cambodia
+            * `CM` - Cameroon
+            * `CA` - Canada
+            * `KY` - Cayman Islands
+            * `CF` - Central African Republic
+            * `TD` - Chad
+            * `CL` - Chile
+            * `CN` - China
+            * `CX` - Christmas Island
+            * `CC` - Cocos (Keeling) Islands
+            * `CO` - Colombia
+            * `KM` - Comoros
+            * `CG` - Congo
+            * `CD` - Congo (the Democratic Republic of the)
+            * `CK` - Cook Islands
+            * `CR` - Costa Rica
+            * `CI` - Côte d'Ivoire
+            * `HR` - Croatia
+            * `CU` - Cuba
+            * `CW` - Curaçao
+            * `CY` - Cyprus
+            * `CZ` - Czechia
+            * `DK` - Denmark
+            * `DJ` - Djibouti
+            * `DM` - Dominica
+            * `DO` - Dominican Republic
+            * `EC` - Ecuador
+            * `EG` - Egypt
+            * `SV` - El Salvador
+            * `GQ` - Equatorial Guinea
+            * `ER` - Eritrea
+            * `EE` - Estonia
+            * `SZ` - Eswatini
+            * `ET` - Ethiopia
+            * `FK` - Falkland Islands (Malvinas)
+            * `FO` - Faroe Islands
+            * `FJ` - Fiji
+            * `FI` - Finland
+            * `FR` - France
+            * `GF` - French Guiana
+            * `PF` - French Polynesia
+            * `TF` - French Southern Territories
+            * `GA` - Gabon
+            * `GM` - Gambia
+            * `GE` - Georgia
+            * `DE` - Germany
+            * `GH` - Ghana
+            * `GI` - Gibraltar
+            * `GR` - Greece
+            * `GL` - Greenland
+            * `GD` - Grenada
+            * `GP` - Guadeloupe
+            * `GU` - Guam
+            * `GT` - Guatemala
+            * `GG` - Guernsey
+            * `GN` - Guinea
+            * `GW` - Guinea-Bissau
+            * `GY` - Guyana
+            * `HT` - Haiti
+            * `HM` - Heard Island and McDonald Islands
+            * `VA` - Holy See
+            * `HN` - Honduras
+            * `HK` - Hong Kong
+            * `HU` - Hungary
+            * `IS` - Iceland
+            * `IN` - India
+            * `ID` - Indonesia
+            * `IR` - Iran
+            * `IQ` - Iraq
+            * `IE` - Ireland
+            * `IM` - Isle of Man
+            * `IL` - Israel
+            * `IT` - Italy
+            * `JM` - Jamaica
+            * `JP` - Japan
+            * `JE` - Jersey
+            * `JO` - Jordan
+            * `KZ` - Kazakhstan
+            * `KE` - Kenya
+            * `KI` - Kiribati
+            * `KW` - Kuwait
+            * `KG` - Kyrgyzstan
+            * `LA` - Laos
+            * `LV` - Latvia
+            * `LB` - Lebanon
+            * `LS` - Lesotho
+            * `LR` - Liberia
+            * `LY` - Libya
+            * `LI` - Liechtenstein
+            * `LT` - Lithuania
+            * `LU` - Luxembourg
+            * `MO` - Macao
+            * `MG` - Madagascar
+            * `MW` - Malawi
+            * `MY` - Malaysia
+            * `MV` - Maldives
+            * `ML` - Mali
+            * `MT` - Malta
+            * `MH` - Marshall Islands
+            * `MQ` - Martinique
+            * `MR` - Mauritania
+            * `MU` - Mauritius
+            * `YT` - Mayotte
+            * `MX` - Mexico
+            * `FM` - Micronesia
+            * `MD` - Moldova
+            * `MC` - Monaco
+            * `MN` - Mongolia
+            * `ME` - Montenegro
+            * `MS` - Montserrat
+            * `MA` - Morocco
+            * `MZ` - Mozambique
+            * `MM` - Myanmar
+            * `NA` - Namibia
+            * `NR` - Nauru
+            * `NP` - Nepal
+            * `NL` - Netherlands
+            * `NC` - New Caledonia
+            * `NZ` - New Zealand
+            * `NI` - Nicaragua
+            * `NE` - Niger
+            * `NG` - Nigeria
+            * `NU` - Niue
+            * `NF` - Norfolk Island
+            * `KP` - North Korea
+            * `MK` - North Macedonia
+            * `MP` - Northern Mariana Islands
+            * `NO` - Norway
+            * `OM` - Oman
+            * `PK` - Pakistan
+            * `PW` - Palau
+            * `PS` - Palestine, State of
+            * `PA` - Panama
+            * `PG` - Papua New Guinea
+            * `PY` - Paraguay
+            * `PE` - Peru
+            * `PH` - Philippines
+            * `PN` - Pitcairn
+            * `PL` - Poland
+            * `PT` - Portugal
+            * `PR` - Puerto Rico
+            * `QA` - Qatar
+            * `RE` - Réunion
+            * `RO` - Romania
+            * `RU` - Russia
+            * `RW` - Rwanda
+            * `BL` - Saint Barthélemy
+            * `SH` - Saint Helena, Ascension and Tristan da Cunha
+            * `KN` - Saint Kitts and Nevis
+            * `LC` - Saint Lucia
+            * `MF` - Saint Martin (French part)
+            * `PM` - Saint Pierre and Miquelon
+            * `VC` - Saint Vincent and the Grenadines
+            * `WS` - Samoa
+            * `SM` - San Marino
+            * `ST` - Sao Tome and Principe
+            * `SA` - Saudi Arabia
+            * `SN` - Senegal
+            * `RS` - Serbia
+            * `SC` - Seychelles
+            * `SL` - Sierra Leone
+            * `SG` - Singapore
+            * `SX` - Sint Maarten (Dutch part)
+            * `SK` - Slovakia
+            * `SI` - Slovenia
+            * `SB` - Solomon Islands
+            * `SO` - Somalia
+            * `ZA` - South Africa
+            * `GS` - South Georgia and the South Sandwich Islands
+            * `KR` - South Korea
+            * `SS` - South Sudan
+            * `ES` - Spain
+            * `LK` - Sri Lanka
+            * `SD` - Sudan
+            * `SR` - Suriname
+            * `SJ` - Svalbard and Jan Mayen
+            * `SE` - Sweden
+            * `CH` - Switzerland
+            * `SY` - Syria
+            * `TW` - Taiwan
+            * `TJ` - Tajikistan
+            * `TZ` - Tanzania
+            * `TH` - Thailand
+            * `TL` - Timor-Leste
+            * `TG` - Togo
+            * `TK` - Tokelau
+            * `TO` - Tonga
+            * `TT` - Trinidad and Tobago
+            * `TN` - Tunisia
+            * `TR` - Türkiye
+            * `TM` - Turkmenistan
+            * `TC` - Turks and Caicos Islands
+            * `TV` - Tuvalu
+            * `UG` - Uganda
+            * `UA` - Ukraine
+            * `AE` - United Arab Emirates
+            * `GB` - United Kingdom
+            * `UM` - United States Minor Outlying Islands
+            * `US` - United States of America
+            * `UY` - Uruguay
+            * `UZ` - Uzbekistan
+            * `VU` - Vanuatu
+            * `VE` - Venezuela
+            * `VN` - Vietnam
+            * `VG` - Virgin Islands (British)
+            * `VI` - Virgin Islands (U.S.)
+            * `WF` - Wallis and Futuna
+            * `EH` - Western Sahara
+            * `YE` - Yemen
+            * `ZM` - Zambia
+            * `ZW` - Zimbabwe
+          oneOf:
+          - $ref: '#/components/schemas/CountryEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+      required:
+      - phone
+    UserRequest:
+      type: object
+      description: Serializer for user data
+      properties:
+        country:
+          nullable: true
+          description: |-
+            User country
+
+            * `AF` - Afghanistan
+            * `AX` - Åland Islands
+            * `AL` - Albania
+            * `DZ` - Algeria
+            * `AS` - American Samoa
+            * `AD` - Andorra
+            * `AO` - Angola
+            * `AI` - Anguilla
+            * `AQ` - Antarctica
+            * `AG` - Antigua and Barbuda
+            * `AR` - Argentina
+            * `AM` - Armenia
+            * `AW` - Aruba
+            * `AU` - Australia
+            * `AT` - Austria
+            * `AZ` - Azerbaijan
+            * `BS` - Bahamas
+            * `BH` - Bahrain
+            * `BD` - Bangladesh
+            * `BB` - Barbados
+            * `BY` - Belarus
+            * `BE` - Belgium
+            * `BZ` - Belize
+            * `BJ` - Benin
+            * `BM` - Bermuda
+            * `BT` - Bhutan
+            * `BO` - Bolivia
+            * `BQ` - Bonaire, Sint Eustatius and Saba
+            * `BA` - Bosnia and Herzegovina
+            * `BW` - Botswana
+            * `BV` - Bouvet Island
+            * `BR` - Brazil
+            * `IO` - British Indian Ocean Territory
+            * `BN` - Brunei
+            * `BG` - Bulgaria
+            * `BF` - Burkina Faso
+            * `BI` - Burundi
+            * `CV` - Cabo Verde
+            * `KH` - Cambodia
+            * `CM` - Cameroon
+            * `CA` - Canada
+            * `KY` - Cayman Islands
+            * `CF` - Central African Republic
+            * `TD` - Chad
+            * `CL` - Chile
+            * `CN` - China
+            * `CX` - Christmas Island
+            * `CC` - Cocos (Keeling) Islands
+            * `CO` - Colombia
+            * `KM` - Comoros
+            * `CG` - Congo
+            * `CD` - Congo (the Democratic Republic of the)
+            * `CK` - Cook Islands
+            * `CR` - Costa Rica
+            * `CI` - Côte d'Ivoire
+            * `HR` - Croatia
+            * `CU` - Cuba
+            * `CW` - Curaçao
+            * `CY` - Cyprus
+            * `CZ` - Czechia
+            * `DK` - Denmark
+            * `DJ` - Djibouti
+            * `DM` - Dominica
+            * `DO` - Dominican Republic
+            * `EC` - Ecuador
+            * `EG` - Egypt
+            * `SV` - El Salvador
+            * `GQ` - Equatorial Guinea
+            * `ER` - Eritrea
+            * `EE` - Estonia
+            * `SZ` - Eswatini
+            * `ET` - Ethiopia
+            * `FK` - Falkland Islands (Malvinas)
+            * `FO` - Faroe Islands
+            * `FJ` - Fiji
+            * `FI` - Finland
+            * `FR` - France
+            * `GF` - French Guiana
+            * `PF` - French Polynesia
+            * `TF` - French Southern Territories
+            * `GA` - Gabon
+            * `GM` - Gambia
+            * `GE` - Georgia
+            * `DE` - Germany
+            * `GH` - Ghana
+            * `GI` - Gibraltar
+            * `GR` - Greece
+            * `GL` - Greenland
+            * `GD` - Grenada
+            * `GP` - Guadeloupe
+            * `GU` - Guam
+            * `GT` - Guatemala
+            * `GG` - Guernsey
+            * `GN` - Guinea
+            * `GW` - Guinea-Bissau
+            * `GY` - Guyana
+            * `HT` - Haiti
+            * `HM` - Heard Island and McDonald Islands
+            * `VA` - Holy See
+            * `HN` - Honduras
+            * `HK` - Hong Kong
+            * `HU` - Hungary
+            * `IS` - Iceland
+            * `IN` - India
+            * `ID` - Indonesia
+            * `IR` - Iran
+            * `IQ` - Iraq
+            * `IE` - Ireland
+            * `IM` - Isle of Man
+            * `IL` - Israel
+            * `IT` - Italy
+            * `JM` - Jamaica
+            * `JP` - Japan
+            * `JE` - Jersey
+            * `JO` - Jordan
+            * `KZ` - Kazakhstan
+            * `KE` - Kenya
+            * `KI` - Kiribati
+            * `KW` - Kuwait
+            * `KG` - Kyrgyzstan
+            * `LA` - Laos
+            * `LV` - Latvia
+            * `LB` - Lebanon
+            * `LS` - Lesotho
+            * `LR` - Liberia
+            * `LY` - Libya
+            * `LI` - Liechtenstein
+            * `LT` - Lithuania
+            * `LU` - Luxembourg
+            * `MO` - Macao
+            * `MG` - Madagascar
+            * `MW` - Malawi
+            * `MY` - Malaysia
+            * `MV` - Maldives
+            * `ML` - Mali
+            * `MT` - Malta
+            * `MH` - Marshall Islands
+            * `MQ` - Martinique
+            * `MR` - Mauritania
+            * `MU` - Mauritius
+            * `YT` - Mayotte
+            * `MX` - Mexico
+            * `FM` - Micronesia
+            * `MD` - Moldova
+            * `MC` - Monaco
+            * `MN` - Mongolia
+            * `ME` - Montenegro
+            * `MS` - Montserrat
+            * `MA` - Morocco
+            * `MZ` - Mozambique
+            * `MM` - Myanmar
+            * `NA` - Namibia
+            * `NR` - Nauru
+            * `NP` - Nepal
+            * `NL` - Netherlands
+            * `NC` - New Caledonia
+            * `NZ` - New Zealand
+            * `NI` - Nicaragua
+            * `NE` - Niger
+            * `NG` - Nigeria
+            * `NU` - Niue
+            * `NF` - Norfolk Island
+            * `KP` - North Korea
+            * `MK` - North Macedonia
+            * `MP` - Northern Mariana Islands
+            * `NO` - Norway
+            * `OM` - Oman
+            * `PK` - Pakistan
+            * `PW` - Palau
+            * `PS` - Palestine, State of
+            * `PA` - Panama
+            * `PG` - Papua New Guinea
+            * `PY` - Paraguay
+            * `PE` - Peru
+            * `PH` - Philippines
+            * `PN` - Pitcairn
+            * `PL` - Poland
+            * `PT` - Portugal
+            * `PR` - Puerto Rico
+            * `QA` - Qatar
+            * `RE` - Réunion
+            * `RO` - Romania
+            * `RU` - Russia
+            * `RW` - Rwanda
+            * `BL` - Saint Barthélemy
+            * `SH` - Saint Helena, Ascension and Tristan da Cunha
+            * `KN` - Saint Kitts and Nevis
+            * `LC` - Saint Lucia
+            * `MF` - Saint Martin (French part)
+            * `PM` - Saint Pierre and Miquelon
+            * `VC` - Saint Vincent and the Grenadines
+            * `WS` - Samoa
+            * `SM` - San Marino
+            * `ST` - Sao Tome and Principe
+            * `SA` - Saudi Arabia
+            * `SN` - Senegal
+            * `RS` - Serbia
+            * `SC` - Seychelles
+            * `SL` - Sierra Leone
+            * `SG` - Singapore
+            * `SX` - Sint Maarten (Dutch part)
+            * `SK` - Slovakia
+            * `SI` - Slovenia
+            * `SB` - Solomon Islands
+            * `SO` - Somalia
+            * `ZA` - South Africa
+            * `GS` - South Georgia and the South Sandwich Islands
+            * `KR` - South Korea
+            * `SS` - South Sudan
+            * `ES` - Spain
+            * `LK` - Sri Lanka
+            * `SD` - Sudan
+            * `SR` - Suriname
+            * `SJ` - Svalbard and Jan Mayen
+            * `SE` - Sweden
+            * `CH` - Switzerland
+            * `SY` - Syria
+            * `TW` - Taiwan
+            * `TJ` - Tajikistan
+            * `TZ` - Tanzania
+            * `TH` - Thailand
+            * `TL` - Timor-Leste
+            * `TG` - Togo
+            * `TK` - Tokelau
+            * `TO` - Tonga
+            * `TT` - Trinidad and Tobago
+            * `TN` - Tunisia
+            * `TR` - Türkiye
+            * `TM` - Turkmenistan
+            * `TC` - Turks and Caicos Islands
+            * `TV` - Tuvalu
+            * `UG` - Uganda
+            * `UA` - Ukraine
+            * `AE` - United Arab Emirates
+            * `GB` - United Kingdom
+            * `UM` - United States Minor Outlying Islands
+            * `US` - United States of America
+            * `UY` - Uruguay
+            * `UZ` - Uzbekistan
+            * `VU` - Vanuatu
+            * `VE` - Venezuela
+            * `VN` - Vietnam
+            * `VG` - Virgin Islands (British)
+            * `VI` - Virgin Islands (U.S.)
+            * `WF` - Wallis and Futuna
+            * `EH` - Western Sahara
+            * `YE` - Yemen
+            * `ZM` - Zambia
+            * `ZW` - Zimbabwe
+          oneOf:
+          - $ref: '#/components/schemas/CountryEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+tags:
+- name: Authentication
+  description: Authentication endpoints
+- name: People
+  description: User profile management
+- name: Devices
+  description: Device management endpoints
+- name: PassKeys
+  description: Passkey authentication endpoints
+- name: Feed
+  description: Feed endpoints
+- name: Matches
+  description: Match management endpoints
+- name: Meetings
+  description: Meeting management endpoints

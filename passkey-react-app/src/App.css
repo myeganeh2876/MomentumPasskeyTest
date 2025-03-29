@@ -1,0 +1,251 @@
+/* General Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+  color: #333;
+  line-height: 1.6;
+}
+
+.App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Login Page Styles */
+.login-container {
+  max-width: 500px;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.login-container h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #2c3e50;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: #7f8c8d;
+  font-size: 14px;
+}
+
+.button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 30px;
+}
+
+button {
+  padding: 12px 20px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #2980b9;
+}
+
+button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+.error-message {
+  color: #e74c3c;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #fadbd8;
+  border-radius: 5px;
+}
+
+/* Dashboard Styles */
+.dashboard-container {
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  background-color: #2c3e50;
+  color: white;
+}
+
+.dashboard-header h1 {
+  margin: 0;
+}
+
+.user-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.dashboard-tabs {
+  display: flex;
+  background-color: #ecf0f1;
+  border-bottom: 1px solid #ddd;
+}
+
+.dashboard-tabs button {
+  flex: 1;
+  padding: 15px;
+  background-color: transparent;
+  color: #7f8c8d;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-weight: 500;
+}
+
+.dashboard-tabs button.active {
+  color: #3498db;
+  border-bottom-color: #3498db;
+}
+
+.dashboard-content {
+  padding: 30px;
+}
+
+/* Device and Passkey List Styles */
+.device-list,
+.passkey-list {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table th,
+table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+table tr:hover {
+  background-color: #f5f7fa;
+}
+
+.current-device {
+  background-color: #e8f4fd;
+}
+
+.status {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status.active {
+  background-color: #d5f5e3;
+  color: #27ae60;
+}
+
+.status.inactive {
+  background-color: #fadbd8;
+  color: #e74c3c;
+}
+
+.current-label {
+  margin-left: 10px;
+  font-size: 14px;
+  color: #3498db;
+  font-weight: 500;
+}
+
+.logout-button,
+.delete-button {
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #e74c3c;
+}
+
+.logout-button:hover,
+.delete-button:hover {
+  background-color: #c0392b;
+}
+
+/* Passkey Registration Form */
+.passkey-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.register-passkey-form {
+  display: flex;
+  gap: 10px;
+}
+
+.register-passkey-form input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.loading {
+  text-align: center;
+  padding: 20px;
+  color: #7f8c8d;
+}
+
+.no-data {
+  text-align: center;
+  padding: 30px;
+  color: #7f8c8d;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  margin-top: 20px;
+}
