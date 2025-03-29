@@ -76,38 +76,97 @@ const PhoneLogin = () => {
   };
 
   const handlePasskeyAuth = async () => {
+    console.log('🔑 handlePasskeyAuth: Function called');
+    console.log('📱 handlePasskeyAuth: Phone number:', phone);
+    console.log('🌍 handlePasskeyAuth: Country code:', country);
+    
     if (!phone) {
+      console.log('❌ handlePasskeyAuth: No phone number provided');
       setError('Please enter a phone number');
       return;
     }
     
+    console.log('⏳ handlePasskeyAuth: Setting loading state to true');
     setLoading(true);
+    console.log('🧹 handlePasskeyAuth: Clearing previous errors');
     setError('');
     
     try {
+      console.log('🔄 handlePasskeyAuth: Starting authentication process');
+      console.log('🔄 handlePasskeyAuth: Requesting authentication options from server for phone:', phone);
+      
       // First get the authentication options from the server
+      console.log('🔄 handlePasskeyAuth: Requesting authentication options for phone:', phone);
       const options = await authenticateWithPasskey(phone);
+      console.log('✅ handlePasskeyAuth: Received authentication options:', JSON.stringify(options, null, 2));
+      
+      // Make sure options is in the correct format for startAuthentication
+      if (!options || !options.challenge) {
+        console.error('❌ handlePasskeyAuth: Invalid options format - missing challenge property');
+        console.error('❌ handlePasskeyAuth: Options received:', options);
+        throw new Error('Invalid authentication options format');
+      }
+      
+      console.log('🔑 handlePasskeyAuth: Challenge:', options.challenge);
+      console.log('⏳ handlePasskeyAuth: Timeout:', options.timeout);
+      console.log('🌐 handlePasskeyAuth: rpId:', options.rpId);
+      console.log('🔐 handlePasskeyAuth: allowCredentials:', JSON.stringify(options.allowCredentials));
+      console.log('🔒 handlePasskeyAuth: userVerification:', options.userVerification);
       
       // Then use the PasskeyContext to handle the actual authentication
       const deviceId = getDeviceId();
+      console.log('📱 handlePasskeyAuth: Device ID:', deviceId);
+      
       const userAgent = navigator.userAgent;
+      console.log('🌐 handlePasskeyAuth: User Agent:', userAgent);
+      
       const fcmToken = null; // You would get this from your FCM setup
+      console.log('🔔 handlePasskeyAuth: FCM Token:', fcmToken);
       
       // Import startAuthentication from the browser package
+      console.log('📦 handlePasskeyAuth: Importing startAuthentication from @simplewebauthn/browser');
       const { startAuthentication } = await import('@simplewebauthn/browser');
+      console.log('✅ handlePasskeyAuth: Successfully imported startAuthentication');
       
       // Get passkey configuration
+      console.log('⚙️ handlePasskeyAuth: Getting passkey configuration');
       const passkeyConfig = getPasskeyConfig();
+      console.log('⚙️ handlePasskeyAuth: Passkey configuration:', JSON.stringify(passkeyConfig, null, 2));
       
       // Start the authentication process in the browser with our configuration
-      const authResp = await startAuthentication({
-        ...options,
-        rpId: passkeyConfig.rpId,
-        origin: passkeyConfig.origin
-      });
+      console.log('🔐 handlePasskeyAuth: Starting browser authentication with options and config');
+      console.log('🔐 handlePasskeyAuth: rpId:', passkeyConfig.rpId);
+      console.log('🔐 handlePasskeyAuth: origin:', passkeyConfig.origin);
+      
+      // Prepare the authentication options with the correct format
+      const authOptions = {
+        optionsJSON: {
+          ...options,
+          // Only override rpId and origin if they're not already in the options
+          rpId: options.rpId || passkeyConfig.rpId,
+          origin: options.origin || passkeyConfig.origin
+        }
+      };
+      
+      console.log('🔐 handlePasskeyAuth: Final authentication options:', JSON.stringify(authOptions, null, 2));
+      
+      // SimpleWebAuthn expects options in a specific format with optionsJSON
+      const authResp = await startAuthentication(authOptions);
+      
+      console.log('✅ handlePasskeyAuth: Authentication response received:', JSON.stringify({
+        id: authResp.id,
+        type: authResp.type,
+        responseKeys: Object.keys(authResp.response)
+      }, null, 2));
+      console.log('🔑 handlePasskeyAuth: Credential ID:', authResp.id);
+      console.log('📊 handlePasskeyAuth: ClientDataJSON length:', authResp.response.clientDataJSON.length);
+      console.log('📊 handlePasskeyAuth: AuthenticatorData length:', authResp.response.authenticatorData.length);
+      console.log('📊 handlePasskeyAuth: Signature length:', authResp.response.signature.length);
+      console.log('👤 handlePasskeyAuth: User handle present:', authResp.response.userHandle ? 'Yes' : 'No');
       
       // Verify the authentication with the server
-      const verificationResponse = await verifyPasskeyAuth({
+      console.log('🔄 handlePasskeyAuth: Sending verification request to server');
+      const verificationPayload = {
         credential_id: authResp.id,
         client_data_json: authResp.response.clientDataJSON,
         authenticator_data: authResp.response.authenticatorData,
@@ -116,21 +175,40 @@ const PhoneLogin = () => {
         device_id: deviceId,
         fcm_token: fcmToken,
         user_agent: userAgent
-      });
+      };
+      console.log('📤 handlePasskeyAuth: Verification payload keys:', Object.keys(verificationPayload));
+      
+      const verificationResponse = await verifyPasskeyAuth(verificationPayload);
+      console.log('✅ handlePasskeyAuth: Verification response:', JSON.stringify(verificationResponse, null, 2));
       
       if (verificationResponse) {
+        console.log('🎉 handlePasskeyAuth: Authentication successful, navigating to dashboard');
         navigate('/dashboard');
+      } else {
+        console.log('⚠️ handlePasskeyAuth: Verification response was falsy but did not throw an error');
       }
     } catch (err) {
+      console.error('❌ handlePasskeyAuth: Error during authentication:', err);
+      console.error('❌ handlePasskeyAuth: Error name:', err.name);
+      console.error('❌ handlePasskeyAuth: Error message:', err.message);
+      console.error('❌ handlePasskeyAuth: Error stack:', err.stack);
+      
       setError('Failed to authenticate with passkey. Try using a verification code instead.');
-      console.error(err);
-      // Fall back to code verification
+      console.log('🔄 handlePasskeyAuth: Falling back to code verification');
       setUsePasskeyAuth(false);
+      
+      console.log('📱 handlePasskeyAuth: Requesting phone verification for:', phone, 'country:', country);
       const success = await requestPhoneVerification(phone, country);
+      console.log('📱 handlePasskeyAuth: Phone verification request result:', success ? 'success' : 'failed');
+      
       if (success) {
+        console.log('✉️ handlePasskeyAuth: Verification code sent, updating UI');
         setCodeSent(true);
+      } else {
+        console.log('❌ handlePasskeyAuth: Failed to send verification code');
       }
     } finally {
+      console.log('⏳ handlePasskeyAuth: Setting loading state to false');
       setLoading(false);
     }
   };

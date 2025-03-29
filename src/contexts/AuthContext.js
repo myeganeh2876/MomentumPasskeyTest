@@ -72,6 +72,17 @@ export const AuthProvider = ({ children }) => {
     try {
       // Get authentication options
       const optionsResponse = await authAPI.getPasskeyAuthOptions(phone);
+      
+      // Check if the response data is a string (JSON) and parse it if needed
+      if (typeof optionsResponse.data === 'string') {
+        try {
+          return JSON.parse(optionsResponse.data);
+        } catch (parseError) {
+          console.error('Failed to parse authentication options:', parseError);
+          throw new Error('Invalid authentication options format');
+        }
+      }
+      
       return optionsResponse.data;
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to get authentication options');
