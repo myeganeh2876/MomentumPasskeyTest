@@ -11,6 +11,7 @@ const PhoneLogin = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // eslint-disable-next-line no-unused-vars
   const [usePasskeyAuth, setUsePasskeyAuth] = useState(false);
 
   const { requestPhoneVerification, verifyPhone, authenticateWithPasskey, verifyPasskeyAuth, error: authError } = useAuth();

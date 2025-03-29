@@ -38,9 +38,11 @@ export const getPasskeyConfig = () => {
   };
 };
 
-export default {
+const passkeyUtils = {
   getRpId,
   getRpName,
   getOrigin,
   getPasskeyConfig
 };
+
+export default passkeyUtils;
