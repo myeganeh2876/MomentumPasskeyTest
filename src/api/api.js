@@ -1,6 +1,21 @@
 import axios from 'axios';
 import { getAccessToken, saveTokens } from '../utils/tokenUtils';
 
+// Function to get CSRF token from cookies
+function getCsrfToken() {
+  const name = 'csrftoken=';
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const cookieArray = decodedCookie.split(';');
+  
+  for (let i = 0; i < cookieArray.length; i++) {
+    let cookie = cookieArray[i].trim();
+    if (cookie.indexOf(name) === 0) {
+      return cookie.substring(name.length, cookie.length);
+    }
+  }
+  return '';
+}
+
 // Create an axios instance with default config
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000', // Use environment variable with fallback
@@ -10,7 +25,7 @@ const api = axios.create({
   withCredentials: true, // Include cookies in cross-origin requests
 });
 
-// Add a request interceptor to add the token to all requests
+// Add a request interceptor to add the token and CSRF token to all requests
 api.interceptors.request.use(
   (config) => {
     console.log('📡 API Request:', {
@@ -19,6 +34,17 @@ api.interceptors.request.use(
       data: config.data,
       headers: config.headers
     });
+    
+    // Add CSRF token to all non-GET requests
+    if (config.method !== 'get') {
+      const csrfToken = getCsrfToken();
+      if (csrfToken) {
+        config.headers['X-CSRFToken'] = csrfToken;
+        console.log('🔒 CSRF Token added to request');
+      } else {
+        console.warn('⚠️ No CSRF token found in cookies');
+      }
+    }
     
     const token = getAccessToken();
     if (token) {
@@ -119,6 +145,15 @@ export const authAPI = {
       withCredentials: true, // Include cookies in cross-origin requests
     });
     
+    // Add CSRF token to the request
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      authApi.defaults.headers.common['X-CSRFToken'] = csrfToken;
+      console.log('🔒 CSRF Token added to passkey options request');
+    } else {
+      console.warn('⚠️ No CSRF token found for passkey options request');
+    }
+    
     console.log('🔑 API: Making passkey options request WITHOUT token');
     return authApi.post('/auth/passkey/authenticate/options/', payload);
   },
@@ -144,6 +179,15 @@ export const authAPI = {
       withCredentials: true, // Include cookies in cross-origin requests
     });
     
+    // Add CSRF token to the request
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      authApi.defaults.headers.common['X-CSRFToken'] = csrfToken;
+      console.log('🔒 CSRF Token added to passkey verification request');
+    } else {
+      console.warn('⚠️ No CSRF token found for passkey verification request');
+    }
+    
     console.log('🔑 API: Making passkey verification request WITHOUT token');
     return authApi.post('/auth/passkey/authenticate/verify/', authResponse);
   },
@@ -163,6 +207,15 @@ export const authAPI = {
       },
       withCredentials: true, // Include cookies in cross-origin requests
     });
+    
+    // Add CSRF token to the request
+    const csrfToken = getCsrfToken();
+    if (csrfToken) {
+      authApi.defaults.headers.common['X-CSRFToken'] = csrfToken;
+      console.log('🔒 CSRF Token added to passkey debug request');
+    } else {
+      console.warn('⚠️ No CSRF token found for passkey debug request');
+    }
     
     console.log('🔑 API: Making passkey debug request WITHOUT token');
     return authApi.post('/auth/passkey/authenticate/debug/', authResponse);
