@@ -183,19 +183,76 @@ export const AuthProvider = ({ children }) => {
   const verifyPasskeyAuth = async (authResponse) => {
     setError(null);
     try {
+      console.log('🔍 verifyPasskeyAuth: Verifying passkey authentication');
       const response = await authAPI.verifyPasskeyAuth(authResponse);
       
+      console.log('✅ verifyPasskeyAuth: Authentication successful, response:', response.data);
+      
       // Save tokens using tokenUtils
+      console.log('💾 verifyPasskeyAuth: Saving tokens');
       saveTokens(response.data.access, response.data.refresh);
       
-      setCurrentUser({ isLoggedIn: true });
+      // Update user state with information from the response
+      console.log('👤 verifyPasskeyAuth: Setting current user');
+      setCurrentUser({ 
+        isLoggedIn: true,
+        phone: response.data.user?.phone,
+        country: response.data.user?.country,
+        firstName: response.data.user?.first_name,
+        lastName: response.data.user?.last_name
+      });
+      
+      console.log('🎉 verifyPasskeyAuth: Login successful');
       return true;
     } catch (err) {
+      console.error('❌ verifyPasskeyAuth: Error during verification:', err);
       setError(err.response?.data?.message || 'Failed to verify passkey');
       return false;
     }
   };
 
+  // Handle passkey authentication response
+  const handlePasskeyAuthResponse = (jsonResponse) => {
+    console.log('🔍 handlePasskeyAuthResponse: Processing authentication response');
+    
+    try {
+      // Parse the JSON response if it's a string
+      const responseData = typeof jsonResponse === 'string' 
+        ? JSON.parse(jsonResponse) 
+        : jsonResponse;
+      
+      // Extract tokens and user data
+      const { access, refresh, user } = responseData;
+      
+      if (!access || !refresh) {
+        console.error('❌ handlePasskeyAuthResponse: Missing tokens in response');
+        setError('Authentication failed: Missing tokens in response');
+        return false;
+      }
+      
+      // Save tokens
+      console.log('💾 handlePasskeyAuthResponse: Saving tokens');
+      saveTokens(access, refresh);
+      
+      // Update user state
+      console.log('👤 handlePasskeyAuthResponse: Setting current user');
+      setCurrentUser({ 
+        isLoggedIn: true,
+        phone: user?.phone,
+        country: user?.country,
+        firstName: user?.first_name,
+        lastName: user?.last_name
+      });
+      
+      console.log('🎉 handlePasskeyAuthResponse: Login successful');
+      return true;
+    } catch (error) {
+      console.error('❌ handlePasskeyAuthResponse: Error processing response:', error);
+      setError('Failed to process authentication response');
+      return false;
+    }
+  };
+  
   // Logout function
   const logout = async (deviceId) => {
     try {
@@ -224,6 +281,7 @@ export const AuthProvider = ({ children }) => {
     verifyPhone,
     authenticateWithPasskey,
     verifyPasskeyAuth,
+    handlePasskeyAuthResponse,
     logout
   };
 

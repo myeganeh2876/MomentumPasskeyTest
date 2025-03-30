@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useDevice } from '../contexts/DeviceContext';
 import { getPasskeyConfig } from '../utils/passkeyConfig';
-import { saveTokens } from '../utils/tokenUtils';
 import { authAPI } from '../api/api';
 
 const PhoneLogin = () => {
@@ -17,7 +16,7 @@ const PhoneLogin = () => {
   // eslint-disable-next-line no-unused-vars
   const [usePasskeyAuth, setUsePasskeyAuth] = useState(false);
 
-  const { requestPhoneVerification, verifyPhone, error: authError, setCurrentUser } = useAuth();
+  const { requestPhoneVerification, verifyPhone, error: authError, handlePasskeyAuthResponse } = useAuth();
   const { getDeviceId } = useDevice();
   
   const navigate = useNavigate();
@@ -122,40 +121,7 @@ const PhoneLogin = () => {
     }
   };
 
-  const debugPasskeyAuth = async (authResp) => {
-    console.log('🔧 debugPasskeyAuth: Debugging authentication response');
-    
-    try {
-      // Prepare the verification payload with the same format as the regular verification
-      const deviceId = getDeviceId();
-      const userAgent = navigator.userAgent;
-      const fcmToken = null;
-      
-      const debugPayload = {
-        credential_id: authResp.id,
-        client_data_json: authResp.response.clientDataJSON,
-        authenticator_data: authResp.response.authenticatorData,
-        signature: authResp.response.signature,
-        user_handle: authResp.response.userHandle,
-        device_id: deviceId,
-        fcm_token: fcmToken,
-        user_agent: userAgent,
-        phone: phone  // Include the phone number in the debug payload
-      };
-      
-      console.log('🔧 debugPasskeyAuth: Sending debug request with payload');
-      const debugResponse = await authAPI.debugPasskeyAuth(debugPayload);
-      console.log('🔧 debugPasskeyAuth: Debug response received:', debugResponse.data);
-      
-      // Display the debug information
-      setError(JSON.stringify(debugResponse.data, null, 2));
-    } catch (err) {
-      console.error('❌ debugPasskeyAuth: Error during debug:', err);
-      setError(`Debug error: ${err.message}\n${JSON.stringify(err.response?.data || {}, null, 2)}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+
   
   const handlePasskeyAuth = async () => {
     console.log('🔑 handlePasskeyAuth: Function called');
@@ -274,12 +240,13 @@ const PhoneLogin = () => {
       const verificationResponse = await authAPI.verifyPasskeyAuth(verificationPayload);
       console.log('✅ handlePasskeyAuth: Verification response:', JSON.stringify(verificationResponse.data, null, 2));
       
-      // Save tokens from the verification response
+      // Process the authentication response using the utility function
       if (verificationResponse.data.access && verificationResponse.data.refresh) {
-        console.log('💾 handlePasskeyAuth: Saving tokens from verification response');
-        const accessToken = `${verificationResponse.data.access}`;
-        saveTokens(accessToken, verificationResponse.data.refresh);
-        setCurrentUser({ isLoggedIn: true });
+        console.log('💾 handlePasskeyAuth: Processing authentication response');
+        
+        // Use the AuthContext's function to handle the response
+        handlePasskeyAuthResponse(verificationResponse.data);
+        console.log('✅ handlePasskeyAuth: Authentication processed successfully');
       } else {
         console.warn('⚠️ handlePasskeyAuth: No tokens in verification response');
       }
@@ -290,10 +257,7 @@ const PhoneLogin = () => {
         navigate('/dashboard');
       } else {
         console.log('⚠️ handlePasskeyAuth: Verification response did not contain expected data');
-        setError('Authentication failed. Using debug endpoint to troubleshoot...');
-        
-        // Call the debug function with the authentication response to get more information
-        await debugPasskeyAuth(authResp);
+        setError('Authentication failed. Please try using a verification code instead.');
       }
     } catch (err) {
       console.error('❌ handlePasskeyAuth: Error during authentication:', err);
@@ -378,63 +342,7 @@ const PhoneLogin = () => {
             
 
             
-            {process.env.NODE_ENV !== 'production' && (
-              <button
-                type="button"
-                className="debug-button"
-                onClick={async () => {
-                  try {
-                    setLoading(true);
-                    // Get authentication options
-                    const phonePayload = { phone };
-                    const optionsResponse = await authAPI.getPasskeyAuthOptions(phonePayload);
-                    console.log('🔧 Debug: Authentication options:', optionsResponse.data);
-                    
-                    // Start authentication
-                    const { startAuthentication } = await import('@simplewebauthn/browser');
-                    
-                    // Ensure options are properly formatted
-                    let options = optionsResponse.data;
-                    if (typeof options === 'string') {
-                      try {
-                        options = JSON.parse(options);
-                      } catch (parseError) {
-                        console.error('❌ Debug: Failed to parse authentication options:', parseError);
-                        throw new Error('Invalid authentication options format');
-                      }
-                    }
-                    
-                    console.log('✅ Debug: Parsed authentication options:', JSON.stringify(options, null, 2));
-                    
-                    // Make sure options is in the correct format for startAuthentication
-                    if (!options || !options.challenge) {
-                      console.error('❌ Debug: Invalid options format - missing challenge property');
-                      console.error('❌ Debug: Options received:', options);
-                      throw new Error('Invalid authentication options format');
-                    }
-                    
-                    // SimpleWebAuthn expects options in a specific format
-                    console.log('🔑 Debug: Challenge:', options.challenge);
-                    console.log('⏱ Debug: Timeout:', options.timeout);
-                    console.log('🌐 Debug: rpId:', options.rpId);
-                    console.log('🔐 Debug: allowCredentials:', JSON.stringify(options.allowCredentials));
-                    
-                    // Make sure to pass the options directly to startAuthentication
-                    const authResp = await startAuthentication(options);
-                    
-                    // Call the debug endpoint
-                    await debugPasskeyAuth(authResp);
-                  } catch (err) {
-                    console.error('❌ Debug button error:', err);
-                    setError(`Debug error: ${err.message}`);
-                    setLoading(false);
-                  }
-                }}
-                disabled={loading}
-              >
-                Debug WebAuthn
-              </button>
-            )}
+
           </div>
         </form>
       ) : (

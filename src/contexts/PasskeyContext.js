@@ -16,7 +16,7 @@ export const PasskeyProvider = ({ children }) => {
   const [passkeyCredentials, setPasskeyCredentials] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const { currentUser } = useAuth();
+  const { currentUser, handlePasskeyAuthResponse } = useAuth();
 
   // Fetch user's passkey credentials
   const fetchPasskeyCredentials = async () => {
@@ -129,7 +129,15 @@ export const PasskeyProvider = ({ children }) => {
         user_agent: userAgent
       });
       
-      return verificationResponse.data;
+      // Extract data from the authentication response
+      const authData = verificationResponse.data;
+      console.log('✅ Passkey authentication successful');
+      
+      // Process the authentication response
+      handlePasskeyAuthResponse(authData);
+      console.log('👤 User logged in successfully');
+      
+      return authData;
     } catch (err) {
       if (err.name === 'AbortError') {
         setError('Authentication was aborted');

@@ -192,34 +192,7 @@ export const authAPI = {
     return authApi.post('/auth/passkey/authenticate/verify/', authResponse);
   },
   
-  // Debug WebAuthn authentication
-  debugPasskeyAuth: (authResponse) => {
-    console.log('🔑 API: Debugging passkey authentication with payload:', {
-      credential_id: authResponse.credential_id,
-      phone: authResponse.phone
-    });
-    
-    // Create a special axios instance without the token interceptor for this request
-    const authApi = axios.create({
-      baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      withCredentials: true, // Include cookies in cross-origin requests
-    });
-    
-    // Add CSRF token to the request
-    const csrfToken = getCsrfToken();
-    if (csrfToken) {
-      authApi.defaults.headers.common['X-CSRFToken'] = csrfToken;
-      console.log('🔒 CSRF Token added to passkey debug request');
-    } else {
-      console.warn('⚠️ No CSRF token found for passkey debug request');
-    }
-    
-    console.log('🔑 API: Making passkey debug request WITHOUT token');
-    return authApi.post('/auth/passkey/authenticate/debug/', authResponse);
-  },
+
   
   // Passkey registration
   getPasskeyRegOptions: (name) => {
