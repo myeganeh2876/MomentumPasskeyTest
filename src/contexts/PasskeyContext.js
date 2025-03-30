@@ -2,7 +2,6 @@ import React, { createContext, useState, useContext } from 'react';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import { authAPI } from '../api/api';
 import { useAuth } from './AuthContext';
-import { getPasskeyConfig } from '../utils/passkeyConfig';
 
 // Create the context
 const PasskeyContext = createContext();
@@ -46,16 +45,23 @@ export const PasskeyProvider = ({ children }) => {
       const optionsResponse = await authAPI.getPasskeyRegOptions(name);
       const options = optionsResponse.data;
       
-      // Get passkey configuration
-      const passkeyConfig = getPasskeyConfig();
+      console.log('🔑 Registration options from server:', options);
       
-      // Start the registration process in the browser with our configuration
-      const attResp = await startRegistration({
-        ...options,
-        rpId: passkeyConfig.rpId,
-        rpName: passkeyConfig.rpName,
-        origin: passkeyConfig.origin
-      });
+      // Ensure options are properly formatted
+      let parsedOptions = options;
+      if (typeof options === 'string') {
+        try {
+          parsedOptions = JSON.parse(options);
+        } catch (parseError) {
+          console.error('❌ Failed to parse registration options:', parseError);
+          throw new Error('Invalid registration options format');
+        }
+      }
+      
+      // Use the server's options directly without overriding
+      // This ensures we use the same rpId and origin as the server expects
+      console.log('🔑 Using registration options:', parsedOptions);
+      const attResp = await startRegistration(parsedOptions);
       
       // Verify the registration with the server
       const verificationResponse = await authAPI.verifyPasskeyReg({
@@ -93,15 +99,23 @@ export const PasskeyProvider = ({ children }) => {
       const optionsResponse = await authAPI.getPasskeyAuthOptions(phone);
       const options = optionsResponse.data;
       
-      // Get passkey configuration
-      const passkeyConfig = getPasskeyConfig();
+      console.log('🔑 Authentication options from server:', options);
       
-      // Start the authentication process in the browser with our configuration
-      const authResp = await startAuthentication({
-        ...options,
-        rpId: passkeyConfig.rpId,
-        origin: passkeyConfig.origin
-      });
+      // Ensure options are properly formatted
+      let parsedOptions = options;
+      if (typeof options === 'string') {
+        try {
+          parsedOptions = JSON.parse(options);
+        } catch (parseError) {
+          console.error('❌ Failed to parse authentication options:', parseError);
+          throw new Error('Invalid authentication options format');
+        }
+      }
+      
+      // Use the server's options directly without overriding
+      // This ensures we use the same rpId and origin as the server expects
+      console.log('🔑 Using authentication options:', parsedOptions);
+      const authResp = await startAuthentication(parsedOptions);
       
       // Verify the authentication with the server
       const verificationResponse = await authAPI.verifyPasskeyAuth({

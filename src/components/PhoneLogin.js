@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useDevice } from '../contexts/DeviceContext';
 import { getPasskeyConfig } from '../utils/passkeyConfig';
+import { saveTokens } from '../utils/tokenUtils';
+import { authAPI } from '../api/api';
 
 const PhoneLogin = () => {
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('US');
+  const [countries, setCountries] = useState([]);
   const [codeSent, setCodeSent] = useState(false);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,10 +17,42 @@ const PhoneLogin = () => {
   // eslint-disable-next-line no-unused-vars
   const [usePasskeyAuth, setUsePasskeyAuth] = useState(false);
 
-  const { requestPhoneVerification, verifyPhone, authenticateWithPasskey, verifyPasskeyAuth, error: authError } = useAuth();
+  const { requestPhoneVerification, verifyPhone, error: authError, setCurrentUser } = useAuth();
   const { getDeviceId } = useDevice();
   
   const navigate = useNavigate();
+  
+  // Fetch countries when component mounts
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        console.log('🌍 PhoneLogin: Fetching countries from API');
+        const response = await authAPI.getCountries();
+        console.log('🌍 PhoneLogin: Countries fetched successfully:', response.data);
+        setCountries(response.data);
+        
+        // If countries are loaded and the current country is not in the list,
+        // set the first country as default
+        if (response.data.length > 0) {
+          const countryCodes = response.data.map(c => c.code);
+          if (!countryCodes.includes(country)) {
+            console.log(`🌍 PhoneLogin: Current country ${country} not found in API response, setting default`);
+            setCountry(response.data[0].code);
+          }
+        }
+      } catch (err) {
+        console.error('❌ PhoneLogin: Error fetching countries:', err);
+        // Set some default countries in case the API fails
+        setCountries([
+          { code: 'US', name: 'United States', phone_prefix: '+1' },
+          { code: 'CA', name: 'Canada', phone_prefix: '+1' },
+          { code: 'GB', name: 'United Kingdom', phone_prefix: '+44' }
+        ]);
+      }
+    };
+    
+    fetchCountries();
+  }, [country]); // Added country as a dependency
 
   const handleSendCode = async (e) => {
     e.preventDefault();
@@ -47,34 +82,81 @@ const PhoneLogin = () => {
 
   const handleVerifyCode = async (e) => {
     e.preventDefault();
+    console.log('🔍 handleVerifyCode: Function called with code:', code);
     
     if (!code) {
       setError('Please enter the verification code');
+      console.log('❌ handleVerifyCode: No verification code entered');
       return;
     }
     
     setLoading(true);
     setError('');
+    console.log('🔄 handleVerifyCode: Starting verification process');
     
     try {
       const deviceId = getDeviceId();
+      console.log('📱 handleVerifyCode: Device ID:', deviceId);
       const userAgent = navigator.userAgent;
       const fcmToken = null; // You would get this from your FCM setup
       
-      const success = await verifyPhone(phone, code, country, deviceId, fcmToken, userAgent);
-      if (success) {
+      console.log('📡 handleVerifyCode: Calling verifyPhone with:', { phone, code, country });
+      // We're passing a callback function that will be called after passkey registration is attempted
+      const success = await verifyPhone(phone, code, country, deviceId, fcmToken, userAgent, () => {
+        console.log('🎉 handleVerifyCode: Verification and passkey registration completed, navigating to dashboard');
         navigate('/dashboard');
-      } else {
+      });
+      console.log('📢 handleVerifyCode: verifyPhone result:', success);
+      
+      if (!success) {
+        console.log('❌ handleVerifyCode: Verification failed:', authError);
         setError(authError || 'Failed to verify code');
       }
+      // Note: We don't navigate here anymore, the callback will handle it
     } catch (err) {
+      console.error('❌ handleVerifyCode: Error during verification:', err);
       setError('An error occurred while verifying the code');
-      console.error(err);
     } finally {
+      console.log('🔔 handleVerifyCode: Verification process completed');
       setLoading(false);
     }
   };
 
+  const debugPasskeyAuth = async (authResp) => {
+    console.log('🔧 debugPasskeyAuth: Debugging authentication response');
+    
+    try {
+      // Prepare the verification payload with the same format as the regular verification
+      const deviceId = getDeviceId();
+      const userAgent = navigator.userAgent;
+      const fcmToken = null;
+      
+      const debugPayload = {
+        credential_id: authResp.id,
+        client_data_json: authResp.response.clientDataJSON,
+        authenticator_data: authResp.response.authenticatorData,
+        signature: authResp.response.signature,
+        user_handle: authResp.response.userHandle,
+        device_id: deviceId,
+        fcm_token: fcmToken,
+        user_agent: userAgent,
+        phone: phone  // Include the phone number in the debug payload
+      };
+      
+      console.log('🔧 debugPasskeyAuth: Sending debug request with payload');
+      const debugResponse = await authAPI.debugPasskeyAuth(debugPayload);
+      console.log('🔧 debugPasskeyAuth: Debug response received:', debugResponse.data);
+      
+      // Display the debug information
+      setError(JSON.stringify(debugResponse.data, null, 2));
+    } catch (err) {
+      console.error('❌ debugPasskeyAuth: Error during debug:', err);
+      setError(`Debug error: ${err.message}\n${JSON.stringify(err.response?.data || {}, null, 2)}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   const handlePasskeyAuth = async () => {
     console.log('🔑 handlePasskeyAuth: Function called');
     console.log('📱 handlePasskeyAuth: Phone number:', phone);
@@ -95,10 +177,27 @@ const PhoneLogin = () => {
       console.log('🔄 handlePasskeyAuth: Starting authentication process');
       console.log('🔄 handlePasskeyAuth: Requesting authentication options from server for phone:', phone);
       
-      // First get the authentication options from the server
-      console.log('🔄 handlePasskeyAuth: Requesting authentication options for phone:', phone);
-      const options = await authenticateWithPasskey(phone);
-      console.log('✅ handlePasskeyAuth: Received authentication options:', JSON.stringify(options, null, 2));
+      // Step 1: Get authentication options from the server with the phone number
+      console.log('🔄 handlePasskeyAuth: Step 1 - Requesting authentication options for phone:', phone);
+      
+      // Make sure we're sending the phone in the correct format
+      const phonePayload = { phone };
+      console.log('📤 handlePasskeyAuth: Sending phone payload:', phonePayload);
+      
+      const optionsResponse = await authAPI.getPasskeyAuthOptions(phonePayload);
+      console.log('✅ handlePasskeyAuth: Received raw authentication options response:', optionsResponse.data);
+      
+      // Parse the options if needed
+      let options = optionsResponse.data;
+      if (typeof options === 'string') {
+        try {
+          options = JSON.parse(options);
+        } catch (parseError) {
+          console.error('❌ handlePasskeyAuth: Failed to parse authentication options:', parseError);
+          throw new Error('Invalid authentication options format');
+        }
+      }
+      console.log('✅ handlePasskeyAuth: Parsed authentication options:', JSON.stringify(options, null, 2));
       
       // Make sure options is in the correct format for startAuthentication
       if (!options || !options.challenge) {
@@ -138,20 +237,12 @@ const PhoneLogin = () => {
       console.log('🔐 handlePasskeyAuth: rpId:', passkeyConfig.rpId);
       console.log('🔐 handlePasskeyAuth: origin:', passkeyConfig.origin);
       
-      // Prepare the authentication options with the correct format
-      const authOptions = {
-        optionsJSON: {
-          ...options,
-          // Only override rpId and origin if they're not already in the options
-          rpId: options.rpId || passkeyConfig.rpId,
-          origin: options.origin || passkeyConfig.origin
-        }
-      };
+      // SimpleWebAuthn expects the options directly, not wrapped in an optionsJSON property
+      // Make sure we're using the server's options directly
+      console.log('🔐 handlePasskeyAuth: Using server options directly:', JSON.stringify(options, null, 2));
       
-      console.log('🔐 handlePasskeyAuth: Final authentication options:', JSON.stringify(authOptions, null, 2));
-      
-      // SimpleWebAuthn expects options in a specific format with optionsJSON
-      const authResp = await startAuthentication(authOptions);
+      // Start the authentication process with the server's options
+      const authResp = await startAuthentication(options);
       
       console.log('✅ handlePasskeyAuth: Authentication response received:', JSON.stringify({
         id: authResp.id,
@@ -164,8 +255,8 @@ const PhoneLogin = () => {
       console.log('📊 handlePasskeyAuth: Signature length:', authResp.response.signature.length);
       console.log('👤 handlePasskeyAuth: User handle present:', authResp.response.userHandle ? 'Yes' : 'No');
       
-      // Verify the authentication with the server
-      console.log('🔄 handlePasskeyAuth: Sending verification request to server');
+      // Step 2: Verify the authentication with the server
+      console.log('🔄 handlePasskeyAuth: Step 2 - Sending verification request to server');
       const verificationPayload = {
         credential_id: authResp.id,
         client_data_json: authResp.response.clientDataJSON,
@@ -174,18 +265,35 @@ const PhoneLogin = () => {
         user_handle: authResp.response.userHandle,
         device_id: deviceId,
         fcm_token: fcmToken,
-        user_agent: userAgent
+        user_agent: userAgent,
+        phone: phone  // Include the phone number in the verification payload
       };
       console.log('📤 handlePasskeyAuth: Verification payload keys:', Object.keys(verificationPayload));
       
-      const verificationResponse = await verifyPasskeyAuth(verificationPayload);
-      console.log('✅ handlePasskeyAuth: Verification response:', JSON.stringify(verificationResponse, null, 2));
+      // Call the API directly to ensure we're following the correct sequence
+      const verificationResponse = await authAPI.verifyPasskeyAuth(verificationPayload);
+      console.log('✅ handlePasskeyAuth: Verification response:', JSON.stringify(verificationResponse.data, null, 2));
       
-      if (verificationResponse) {
+      // Save tokens from the verification response
+      if (verificationResponse.data.access && verificationResponse.data.refresh) {
+        console.log('💾 handlePasskeyAuth: Saving tokens from verification response');
+        const accessToken = `${verificationResponse.data.access}`;
+        saveTokens(accessToken, verificationResponse.data.refresh);
+        setCurrentUser({ isLoggedIn: true });
+      } else {
+        console.warn('⚠️ handlePasskeyAuth: No tokens in verification response');
+      }
+      
+      // Check if we have a successful response with tokens
+      if (verificationResponse && verificationResponse.data && verificationResponse.data.access) {
         console.log('🎉 handlePasskeyAuth: Authentication successful, navigating to dashboard');
         navigate('/dashboard');
       } else {
-        console.log('⚠️ handlePasskeyAuth: Verification response was falsy but did not throw an error');
+        console.log('⚠️ handlePasskeyAuth: Verification response did not contain expected data');
+        setError('Authentication failed. Using debug endpoint to troubleshoot...');
+        
+        // Call the debug function with the authentication response to get more information
+        await debugPasskeyAuth(authResp);
       }
     } catch (err) {
       console.error('❌ handlePasskeyAuth: Error during authentication:', err);
@@ -227,10 +335,15 @@ const PhoneLogin = () => {
               onChange={(e) => setCountry(e.target.value)}
               disabled={loading}
             >
-              <option value="US">United States</option>
-              <option value="CA">Canada</option>
-              <option value="GB">United Kingdom</option>
-              {/* Add more countries as needed */}
+              {countries.length > 0 ? (
+                countries.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.name} ({c.phone_prefix})
+                  </option>
+                ))
+              ) : (
+                <option value="US">United States</option>
+              )}
             </select>
           </div>
           
@@ -262,6 +375,66 @@ const PhoneLogin = () => {
             >
               {loading ? 'Authenticating...' : 'Use Passkey'}
             </button>
+            
+
+            
+            {process.env.NODE_ENV !== 'production' && (
+              <button
+                type="button"
+                className="debug-button"
+                onClick={async () => {
+                  try {
+                    setLoading(true);
+                    // Get authentication options
+                    const phonePayload = { phone };
+                    const optionsResponse = await authAPI.getPasskeyAuthOptions(phonePayload);
+                    console.log('🔧 Debug: Authentication options:', optionsResponse.data);
+                    
+                    // Start authentication
+                    const { startAuthentication } = await import('@simplewebauthn/browser');
+                    
+                    // Ensure options are properly formatted
+                    let options = optionsResponse.data;
+                    if (typeof options === 'string') {
+                      try {
+                        options = JSON.parse(options);
+                      } catch (parseError) {
+                        console.error('❌ Debug: Failed to parse authentication options:', parseError);
+                        throw new Error('Invalid authentication options format');
+                      }
+                    }
+                    
+                    console.log('✅ Debug: Parsed authentication options:', JSON.stringify(options, null, 2));
+                    
+                    // Make sure options is in the correct format for startAuthentication
+                    if (!options || !options.challenge) {
+                      console.error('❌ Debug: Invalid options format - missing challenge property');
+                      console.error('❌ Debug: Options received:', options);
+                      throw new Error('Invalid authentication options format');
+                    }
+                    
+                    // SimpleWebAuthn expects options in a specific format
+                    console.log('🔑 Debug: Challenge:', options.challenge);
+                    console.log('⏱ Debug: Timeout:', options.timeout);
+                    console.log('🌐 Debug: rpId:', options.rpId);
+                    console.log('🔐 Debug: allowCredentials:', JSON.stringify(options.allowCredentials));
+                    
+                    // Make sure to pass the options directly to startAuthentication
+                    const authResp = await startAuthentication(options);
+                    
+                    // Call the debug endpoint
+                    await debugPasskeyAuth(authResp);
+                  } catch (err) {
+                    console.error('❌ Debug button error:', err);
+                    setError(`Debug error: ${err.message}`);
+                    setLoading(false);
+                  }
+                }}
+                disabled={loading}
+              >
+                Debug WebAuthn
+              </button>
+            )}
           </div>
         </form>
       ) : (

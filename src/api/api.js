@@ -7,18 +7,32 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Include cookies in cross-origin requests
 });
 
 // Add a request interceptor to add the token to all requests
 api.interceptors.request.use(
   (config) => {
+    console.log('📡 API Request:', {
+      url: config.url,
+      method: config.method,
+      data: config.data,
+      headers: config.headers
+    });
+    
     const token = getAccessToken();
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // Ensure the token has the Bearer prefix
+      const tokenWithPrefix = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+      config.headers.Authorization = tokenWithPrefix;
+      console.log('🔑 Token added to request:', tokenWithPrefix.substring(0, 20) + '...');
+    } else {
+      console.log('⚠️ No token available for request');
     }
     return config;
   },
   (error) => {
+    console.error('❌ API Request Error:', error);
     return Promise.reject(error);
   }
 );
@@ -26,6 +40,11 @@ api.interceptors.request.use(
 // Add a response interceptor to handle token refresh
 api.interceptors.response.use(
   (response) => {
+    console.log('✅ API Response:', {
+      url: response.config.url,
+      status: response.status,
+      data: response.data
+    });
     return response;
   },
   async (error) => {
@@ -52,6 +71,7 @@ api.interceptors.response.use(
         saveTokens(response.data.access, response.data.refresh);
         
         // Retry the original request with the new token
+        // Ensure the token has the Bearer prefix
         originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
         return api(originalRequest);
       } catch (refreshError) {
@@ -86,12 +106,66 @@ export const authAPI = {
   },
   
   // Passkey authentication
-  getPasskeyAuthOptions: (phone) => {
-    return api.post('/auth/passkey/authenticate/options/', { phone });
+  getPasskeyAuthOptions: (payload) => {
+    console.log('🔑 API: Getting passkey authentication options with payload:', payload);
+    
+    // Create a special axios instance without the token interceptor for this request
+    // since we're authenticating and don't have a token yet
+    const authApi = axios.create({
+      baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true, // Include cookies in cross-origin requests
+    });
+    
+    console.log('🔑 API: Making passkey options request WITHOUT token');
+    return authApi.post('/auth/passkey/authenticate/options/', payload);
   },
   
   verifyPasskeyAuth: (authResponse) => {
-    return api.post('/auth/passkey/authenticate/verify/', authResponse);
+    console.log('🔑 API: Verifying passkey authentication with payload:', {
+      credential_id: authResponse.credential_id,
+      // Don't log the full data for security, just indicate it's present
+      has_client_data: !!authResponse.client_data_json,
+      has_authenticator_data: !!authResponse.authenticator_data,
+      has_signature: !!authResponse.signature,
+      has_user_handle: !!authResponse.user_handle,
+      phone: authResponse.phone
+    });
+    
+    // Create a special axios instance without the token interceptor for this request
+    // since we're authenticating and don't have a token yet
+    const authApi = axios.create({
+      baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true, // Include cookies in cross-origin requests
+    });
+    
+    console.log('🔑 API: Making passkey verification request WITHOUT token');
+    return authApi.post('/auth/passkey/authenticate/verify/', authResponse);
+  },
+  
+  // Debug WebAuthn authentication
+  debugPasskeyAuth: (authResponse) => {
+    console.log('🔑 API: Debugging passkey authentication with payload:', {
+      credential_id: authResponse.credential_id,
+      phone: authResponse.phone
+    });
+    
+    // Create a special axios instance without the token interceptor for this request
+    const authApi = axios.create({
+      baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      withCredentials: true, // Include cookies in cross-origin requests
+    });
+    
+    console.log('🔑 API: Making passkey debug request WITHOUT token');
+    return authApi.post('/auth/passkey/authenticate/debug/', authResponse);
   },
   
   // Passkey registration
@@ -103,6 +177,20 @@ export const authAPI = {
     return api.post('/auth/passkey/register/verify/', regResponse);
   },
   
+  // Trigger passkey registration after login
+  triggerPasskeyRegistration: () => {
+    console.log('🔑 Triggering passkey registration');
+    return api.get('/auth/passkey/register/trigger/')
+      .then(response => {
+        console.log('✅ Passkey registration triggered successfully:', response.data);
+        return response;
+      })
+      .catch(error => {
+        console.error('❌ Failed to trigger passkey registration:', error.response || error);
+        throw error;
+      });
+  },
+  
   // Get passkey credentials
   getPasskeyCredentials: () => {
     return api.get('/auth/passkey/credentials/');
@@ -111,6 +199,12 @@ export const authAPI = {
   // Delete passkey credential
   deletePasskeyCredential: (credentialId) => {
     return api.delete(`/auth/passkey/credentials/${credentialId}/`);
+  },
+  
+  // Get supported countries for phone login
+  getCountries: () => {
+    console.log('🌍 API: Fetching supported countries');
+    return api.get('/auth/phone/countries/');
   },
 };
 

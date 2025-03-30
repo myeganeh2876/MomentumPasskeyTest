@@ -17,6 +17,9 @@ const Dashboard = () => {
   
   const navigate = useNavigate();
 
+  // State to track if data has been fetched already
+  const [dataFetched, setDataFetched] = useState(false);
+
   // Fetch devices and passkey credentials on component mount
   useEffect(() => {
     if (!currentUser?.isLoggedIn) {
@@ -24,9 +27,16 @@ const Dashboard = () => {
       return;
     }
     
-    fetchDevices();
-    fetchPasskeyCredentials();
-  }, [currentUser, fetchDevices, fetchPasskeyCredentials, navigate]);
+    // Only fetch if we haven't fetched data yet
+    if (!dataFetched) {
+      console.log('📱 Dashboard: Fetching devices and passkey credentials');
+      fetchDevices();
+      fetchPasskeyCredentials();
+      setDataFetched(true);
+    }
+    
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate, currentUser, dataFetched]); // Include dataFetched in dependencies
 
   const handleLogout = async () => {
     if (currentDevice) {

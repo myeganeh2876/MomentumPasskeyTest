@@ -175,6 +175,21 @@ paths:
       responses:
         '200':
           description: Registration options generated successfully
+  /auth/passkey/register/trigger/:
+    get:
+      operationId: auth_passkey_register_trigger_retrieve
+      description: Checks if the user already has passkeys and prepares registration
+        data if needed.
+      summary: Trigger passkey registration
+      tags:
+      - PassKeys
+      security:
+      - jwtAuth: []
+      - cookieAuth: []
+      - basicAuth: []
+      responses:
+        '200':
+          description: Registration data prepared successfully
   /auth/passkey/register/verify/:
     post:
       operationId: auth_passkey_register_verify_create
@@ -1921,10 +1936,13 @@ components:
           minLength: 1
         device_id:
           type: string
+          nullable: true
         fcm_token:
           type: string
+          nullable: true
         user_agent:
           type: string
+          nullable: true
       required:
       - authenticator_data
       - client_data_json

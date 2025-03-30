@@ -23,6 +23,7 @@ export const getRpName = () => {
  * @returns {string} The origin URL
  */
 export const getOrigin = () => {
+  // Use the server's expected origin for WebAuthn authentication
   return process.env.REACT_APP_ORIGIN || 'http://localhost:3000';
 };
 

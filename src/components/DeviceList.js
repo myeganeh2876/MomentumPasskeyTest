@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useDevice } from '../contexts/DeviceContext';
 
 const DeviceList = () => {
@@ -7,14 +7,10 @@ const DeviceList = () => {
     currentDevice, 
     loading, 
     error, 
-    fetchDevices, 
     logoutDevice 
   } = useDevice();
 
-  useEffect(() => {
-    fetchDevices();
-  }, [fetchDevices]);
-
+  
   const handleLogoutDevice = async (deviceId) => {
     if (window.confirm('Are you sure you want to log out this device?')) {
       await logoutDevice(deviceId);
